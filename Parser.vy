@@ -23,8 +23,7 @@ Require Import Proj.Cabs.
 %token <Cabs.loc> SET TABLE TEMP TEMPORARY THEN TIES TO TRANSACTION TRIGGER UNBOUNDED UNION
 %token <Cabs.loc> UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN WHERE WINDOW WITH WITHOUT
 
-%token <string * Cabs.loc> IDENT INT_LIT FLOAT_LIT
-%token <(list char_code * Cabs.loc)> STRING_LIT
+%token <list char_code * Cabs.loc> IDENT INT_LIT FLOAT_LIT
 
 %token EOF
 
