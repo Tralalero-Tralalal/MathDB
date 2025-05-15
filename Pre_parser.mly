@@ -22,6 +22,9 @@
 
 %token EOF
 
-%%start<Cabs.item list> program
+%start<Cabs.prog> program
 
 %%
+
+program: 
+  | SELECT EOF { Cabs.TOKEN (Cabs.SELECT $1) }
