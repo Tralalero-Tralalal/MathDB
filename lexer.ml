@@ -13,10 +13,18 @@ let uchar_array_to_string (arr: Uchar.t array) : string =
 (* Lexer utilities *)
 let pos buf = lexing_position_start buf
 
-(* Whitespace and comments handling *)
+let keyword_of_string s loc =
+  match Stdlib.String.uppercase_ascii s with
+  | "SELECT" -> Pre_parser.SELECT loc
+  | _           -> raise (Lexing_error "Unexpected character")
+
 let rec token buf =
   match%sedlex buf with
-    | "SELECT" -> Pre_parser.SELECT (pos buf)
-    | eof -> EOF
-    | white_space -> token buf
-    | _ -> raise (Lexing_error "Unexpected character")
+  | Plus ('a'..'z' | 'A'..'Z' | '_')  ->
+      let uArr = Sedlexing.lexeme buf in
+        let id = uchar_array_to_string uArr in
+          keyword_of_string id (lexing_position_start buf)
+            
+  | white_space -> token buf
+  | eof         -> Pre_parser.EOF
+  | _           -> raise (Lexing_error "Unexpected character")
