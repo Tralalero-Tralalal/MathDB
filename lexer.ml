@@ -187,18 +187,20 @@ let keyword_of_string s loc =
     "VIRTUAL"; "WHEN"; "WHERE"; "WINDOW"; "WITH"; "WITHOUT"
 ]
 
+let is_keyword str = 
+  Stdlib.List.mem (Stdlib.String.uppercase_ascii str) kwds
+
 let rec token buf =
   match%sedlex buf with
   | identifier_or_keyword ->
       let uArr = Sedlexing.lexeme buf in
       let str = uchar_array_to_string uArr in
-      if Stdlib.List.mem str kwds then
+      if is_keyword str then
         keyword_of_string str (lexing_position_start buf)
       else 
       let x = Array.map Uchar.to_int uArr in 
         let ls = Array.to_list(Array.map Int64.of_int x) in
         Pre_parser.IDENT (ls, lexing_position_start buf)
-
   | white_space -> token buf
   | eof -> Pre_parser.EOF
   | _ -> raise (Lexing_error "Unexpected character")
