@@ -28,9 +28,18 @@ Require Import Proj.Cabs.
 
 %token EOF
 
+%type <list Cabs.keyword> keywords
+%type <Cabs.keyword> keyword
 %start<Cabs.prog> program
 
 %%
 
 program: 
-  | SELECT EOF { Cabs.TOKEN (Cabs.SELECT $1) }
+  | keywords EOF { Cabs.PROGRAM $1 }
+
+keywords:
+  | { [] }
+  | keyword keywords { $1 :: $2 }
+
+keyword:
+  | SELECT { Cabs.SELECT $1 }

@@ -8,7 +8,7 @@ Parameter str : Type.
 Parameter char_code : Type.
 
 Inductive prog :=
-  | TOKEN : keyword -> prog
+  | PROGRAM : list keyword -> prog
 
 with keyword :=
   | SELECT : loc -> keyword.

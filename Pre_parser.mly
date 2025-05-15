@@ -27,4 +27,7 @@
 %%
 
 program: 
-  | SELECT EOF { Cabs.TOKEN (Cabs.SELECT $1) }
+  | list(keyword) EOF { Cabs.PROGRAM $1 }
+
+keyword:
+  | SELECT { Cabs.SELECT $1 }
