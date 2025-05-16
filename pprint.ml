@@ -158,6 +158,7 @@ let convert_token = function
   | Pre_parser.IDENT (id, loc) -> Parser.IDENT (id, loc)
   | Pre_parser.INT_LIT (i, loc) -> Parser.INT_LIT (i, loc)
   | Pre_parser.FLOAT_LIT (f, loc) -> Parser.FLOAT_LIT (f, loc)
+  | Pre_parser.STRING_LIT (f, loc) -> Parser.STRING_LIT (f, loc)
 
 let string_of_token = function
   | Parser.SELECT loc -> Printf.sprintf "SELECT, loc: %s" (string_of_loc loc)
@@ -308,8 +309,8 @@ let string_of_token = function
   | Parser.WINDOW _ -> "WINDOW"
   | Parser.WITH _ -> "WITH"
   | Parser.WITHOUT _ -> "WITHOUT"
-  | Parser.IDENT (x, loc) -> 
-          Printf.sprintf "IDENT(%s), loc: %s" x (string_of_loc loc)
+  | Parser.IDENT (x, loc) -> Printf.sprintf "IDENT(%s), loc: %s" x (string_of_loc loc)
+  | Parser.STRING_LIT (x, loc) -> Printf.sprintf "STRING_LIT(%s), loc: %s" x (string_of_loc loc)
 
 open Format
 

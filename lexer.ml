@@ -224,9 +224,22 @@ let rec token buf =
         keyword_of_string str (lexing_position_start buf)
       else 
         Pre_parser.IDENT (str, lexing_position_start buf)
-
+  | "'" -> read_string (Buffer.create 17) buf 
   (* End of file *)
   | eof -> Pre_parser.EOF
 
   (* Fallback case *)
   | _ -> raise (Lexing_error "Unexpected character")
+
+and read_string buffer buf =
+  match%sedlex buf with
+    | "'" ->  (* End of string *)
+      Pre_parser.STRING_LIT ((Buffer.contents buffer), lexing_position_start buf)
+    | "''" ->  (* Escaped single quote *)
+      Buffer.add_char buffer '\'';
+      read_string buffer buf
+    | Plus (Compl (Chars "'")) ->  (* Normal string content *)
+      Buffer.add_string buffer (Utf8.lexeme buf);
+      read_string buffer buf
+    | eof -> failwith "Unterminated string literal"
+    | _ -> failwith "Illegal character in string literal"
