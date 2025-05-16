@@ -23,24 +23,26 @@ Require Import Proj.Cabs.
 %token <Cabs.loc> SET TABLE TEMP TEMPORARY THEN TIES TO TRANSACTION TRIGGER UNBOUNDED UNION
 %token <Cabs.loc> UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN WHERE WINDOW WITH WITHOUT
 %token <Cabs.loc> MINUS STAR SLASH PERCENT EQUAL DOUBLE_EQUAL BANG_EQUAL NOT_EQUAL LPAREN RPAREN 
-%token <Cabs.loc> LT LTE GT GTE AMP BAR LSHIFT RSHIFT TILDE COMMA SEMICOLON DOT PLUS
+%token <Cabs.loc> LT LTE GT GTE AMP BAR LSHIFT RSHIFT TILDE COMMA SEMICOLON DOT PLUS 
 
-%token <str * Cabs.loc> IDENT INT_LIT FLOAT_LIT STRING_LIT BLOB
+%token <Cabs.str * Cabs.loc> IDENT INT_LIT FLOAT_LIT STRING_LIT BLOB
 
 %token EOF
 
-%type <list Cabs.keyword> keywords
-%type <Cabs.keyword> keyword
 %start<Cabs.prog> program
 
+%type<Cabs.sql_stmt> sql_stmt
+%type<Cabs.expr> const
 %%
 
 program: 
-  | keywords EOF { Cabs.PROGRAM $1 }
+  | sql_stmt EOF { Cabs.PROGRAM $1 }
 
-keywords:
-  | { [] }
-  | keyword keywords { $1 :: $2 }
+sql_stmt:
+  | INSERT const const SEMICOLON { Cabs.INSERT_STMT (WITH_INSERT $2 $3) }
 
-keyword:
-  | SELECT { Cabs.SELECT $1 }
+const:
+  | IDENT { EXPR_LIT (fst $1) }
+  | INT_LIT { EXPR_LIT (fst $1) }
+  | FLOAT_LIT { EXPR_LIT (fst $1) }
+  | STRING_LIT { EXPR_LIT (fst $1) }

@@ -28,7 +28,13 @@
 %%
 
 program: 
-  | list(keyword) EOF { Cabs.PROGRAM $1 }
+  | sql_stmt EOF { Cabs.PROGRAM $1 }
 
-keyword:
-  | SELECT { Cabs.SELECT $1 }
+sql_stmt:
+  | INSERT const const SEMICOLON { Cabs.INSERT_STMT (WITH_INSERT ($2, $3)) }
+
+const:
+  | IDENT { EXPR_LIT (fst $1) }
+  | INT_LIT { EXPR_LIT (fst $1) }
+  | FLOAT_LIT { EXPR_LIT (fst $1) }
+  | STRING_LIT { EXPR_LIT (fst $1) }

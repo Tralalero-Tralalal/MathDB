@@ -367,7 +367,13 @@ let string_of_token = function
 open Format
 
 let rec print_program fmt = function
-  | Cabs.PROGRAM word -> Stdlib.List.iter (print_select fmt) word
+  | Cabs.PROGRAM stmts -> print_sql_stmt fmt stmts
 
-and print_select fmt = function
-  | Cabs.SELECT loc -> Format.fprintf fmt "select\n"
+and print_sql_stmt fmt = function
+  | Cabs.INSERT_STMT (Cabs.WITH_INSERT (const1, const2)) ->
+    Format.fprintf fmt "INSERT with %s and %s\n" (print_const const1) (print_const const2)
+  | _ -> Format.fprintf fmt "Unknown SQL statement\n" (* Added a default case *)
+
+and print_const = function
+  | Cabs.EXPR_LIT s -> s
+  | _ -> "Unknown constant" (* Added a default case *)
