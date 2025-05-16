@@ -225,6 +225,9 @@ let rec token buf =
       else 
         Pre_parser.IDENT (str, lexing_position_start buf)
   | "'" -> read_string (Buffer.create 17) buf 
+  | "\"" -> read_double_quotes (Buffer.create 17) buf
+  | '[' -> read_ident_brack (Buffer.create 17) buf
+  | '`' -> read_ident_grave (Buffer.create 17) buf
   (* End of file *)
   | eof -> Pre_parser.EOF
 
@@ -243,3 +246,39 @@ and read_string buffer buf =
       read_string buffer buf
     | eof -> failwith "Unterminated string literal"
     | _ -> failwith "Illegal character in string literal"
+
+and read_double_quotes buffer buf =
+    match%sedlex buf with
+      | "\"" -> 
+        if is_keyword (Buffer.contents buffer) then 
+          Pre_parser.IDENT ((Buffer.contents buffer), lexing_position_start buf)
+        else 
+          Pre_parser.STRING_LIT ((Buffer.contents buffer), lexing_position_start buf)
+
+      | Plus (Compl (Chars "\"")) ->  (* Normal string content *)
+        Buffer.add_string buffer (Utf8.lexeme buf);
+          read_double_quotes buffer buf
+
+      | eof -> failwith "Unterminated string literal"
+      | _ -> failwith "Illegal character in string literal"
+
+and read_ident_brack buffer buf =
+  match%sedlex buf with
+    | "]" ->  (* End of the identifier, closing bracket *)
+      Pre_parser.IDENT ((Buffer.contents buffer), lexing_position_start buf)
+    | Plus (Compl (Chars "]")) ->  (* Normal identifier content *)
+      Buffer.add_string buffer (Utf8.lexeme buf);
+      read_ident_brack buffer buf  (* Keep reading until we hit "]" *)
+    | eof -> failwith "Unterminated identifier"
+    | _ -> failwith "Illegal character in identifier"
+
+
+and read_ident_grave buffer buf =
+  match%sedlex buf with
+    | "`" ->  (* End of the identifier, closing bracket *)
+      Pre_parser.IDENT ((Buffer.contents buffer), lexing_position_start buf)
+    | Plus (Compl (Chars "`")) ->  (* Normal identifier content *)
+      Buffer.add_string buffer (Utf8.lexeme buf);
+      read_ident_grave buffer buf  (* Keep reading until we hit "]" *)
+    | eof -> failwith "Unterminated identifier"
+    | _ -> failwith "Illegal character in identifier"
