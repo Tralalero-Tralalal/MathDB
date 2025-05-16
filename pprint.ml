@@ -309,9 +309,7 @@ let string_of_token = function
   | Parser.WITH _ -> "WITH"
   | Parser.WITHOUT _ -> "WITHOUT"
   | Parser.IDENT (x, loc) -> 
-      let str = Stdlib.List.map Int64.to_string x in 
-        let combined_strings = Stdlib.String.concat " " str in
-          Printf.sprintf "IDENT(%s), loc: %s" combined_strings (string_of_loc loc)
+          Printf.sprintf "IDENT(%s), loc: %s" x (string_of_loc loc)
 
 open Format
 

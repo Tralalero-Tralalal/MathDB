@@ -9,9 +9,8 @@ let identifier_or_keyword =
 
 (* Function to convert a Uchar array to a string *)
 let uchar_array_to_string (arr: Uchar.t array) : string =
-  Array.fold_left (fun acc uchar ->
-    acc ^ (Uchar.to_char uchar |> Stdlib.String.make 1)
-  ) "" arr
+  let x = Array.map Uchar.to_char arr in
+  Stdlib.String.init (Array.length x) (Array.get x)
 
 (* Lexer utilities *)
 let pos buf = lexing_position_start buf
@@ -198,9 +197,7 @@ let rec token buf =
       if is_keyword str then
         keyword_of_string str (lexing_position_start buf)
       else 
-      let x = Array.map Uchar.to_int uArr in 
-        let ls = Array.to_list(Array.map Int64.of_int x) in
-        Pre_parser.IDENT (ls, lexing_position_start buf)
+        Pre_parser.IDENT (str, lexing_position_start buf)
   | white_space -> token buf
   | eof -> Pre_parser.EOF
   | _ -> raise (Lexing_error "Unexpected character")
