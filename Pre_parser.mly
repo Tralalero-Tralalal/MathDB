@@ -32,6 +32,7 @@ program:
 
 sql_stmt:
   | INSERT const const SEMICOLON { Cabs.INSERT_STMT (WITH_INSERT ($2, $3)) }
+  | SELECT { Cabs.PRINT_STMT } 
 
 const:
   | IDENT { EXPR_LIT (fst $1) }

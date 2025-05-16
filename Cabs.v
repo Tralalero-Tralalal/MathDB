@@ -12,6 +12,7 @@ Inductive prog :=
 
 with sql_stmt :=
   | INSERT_STMT       : insert_stmt -> sql_stmt
+  | PRINT_STMT
 
 with expr :=
   | EXPR_LIT : str -> expr
