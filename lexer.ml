@@ -243,6 +243,8 @@ let rec token buf =
       else 
         Pre_parser.IDENT (str, lexing_position_start buf)
   | "'" -> read_string (Buffer.create 17) buf 
+  | "X'" -> read_blob (Buffer.create 17) buf  
+  | "x'" -> read_blob (Buffer.create 17) buf 
   | "\"" -> read_double_quotes (Buffer.create 17) buf
   | '[' -> read_ident_brack (Buffer.create 17) buf
   | '`' -> read_ident_grave (Buffer.create 17) buf
@@ -267,6 +269,19 @@ and read_string buffer buf =
     | Plus (Compl (Chars "'")) ->  (* Normal string content *)
       Buffer.add_string buffer (Utf8.lexeme buf);
       read_string buffer buf
+    | eof -> failwith "Unterminated string literal"
+    | _ -> failwith "Illegal character in string literal"
+
+and read_blob buffer buf =
+  match%sedlex buf with
+    | "'" ->  (* End of string *)
+      Pre_parser.BLOB ((Buffer.contents buffer), lexing_position_start buf)
+    | "''" ->  (* Escaped single quote *)
+      Buffer.add_char buffer '\'';
+      read_string buffer buf
+    | Plus (Compl (Chars "'")) ->  (* Normal string content *)
+      Buffer.add_string buffer (Utf8.lexeme buf);
+      read_blob buffer buf
     | eof -> failwith "Unterminated string literal"
     | _ -> failwith "Illegal character in string literal"
 

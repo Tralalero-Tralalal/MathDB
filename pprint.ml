@@ -182,6 +182,7 @@ let convert_token = function
   | Pre_parser.INT_LIT (i, loc) -> Parser.INT_LIT (i, loc)
   | Pre_parser.FLOAT_LIT (f, loc) -> Parser.FLOAT_LIT (f, loc)
   | Pre_parser.STRING_LIT (s, loc) -> Parser.STRING_LIT (s, loc)
+  | Pre_parser.BLOB (s, loc) -> Parser.BLOB (s, loc)
 
 let string_of_token = function
   | Parser.SELECT loc -> Printf.sprintf "SELECT, loc: %s" (string_of_loc loc)
@@ -361,6 +362,7 @@ let string_of_token = function
   | Parser.STRING_LIT (x, loc) -> Printf.sprintf "STRING_LIT(%s), loc: %s" x (string_of_loc loc)
   | Parser.INT_LIT (x, loc) -> Printf.sprintf "INT_LIT(%s), loc: %s" x (string_of_loc loc)
   | Parser.FLOAT_LIT (x, loc) -> Printf.sprintf "FLOAT_LIT(%s), loc: %s" x (string_of_loc loc)
+  | Parser.BLOB (x, loc) -> Printf.sprintf "BLOB(%s), loc: %s" x (string_of_loc loc)
 
 open Format
 
