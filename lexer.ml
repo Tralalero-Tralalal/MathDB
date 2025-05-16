@@ -191,6 +191,32 @@ let is_keyword str =
 
 let rec token buf =
   match%sedlex buf with
+  | white_space -> token buf
+  | '+' -> Pre_parser.PLUS (lexing_position_start buf)
+  | '-' -> Pre_parser.MINUS (lexing_position_start buf)
+  | '*' -> Pre_parser.STAR (lexing_position_start buf)
+  | '/' -> Pre_parser.SLASH (lexing_position_start buf)
+  | '%' -> Pre_parser.PERCENT (lexing_position_start buf)
+  | '=' -> Pre_parser.EQUAL (lexing_position_start buf)
+  | "==" -> Pre_parser.DOUBLE_EQUAL (lexing_position_start buf)
+  | "!=" -> Pre_parser.BANG_EQUAL (lexing_position_start buf)
+  | "<>" -> Pre_parser.NOT_EQUAL (lexing_position_start buf)
+  | '<' -> Pre_parser.LT (lexing_position_start buf)
+  | "<=" -> Pre_parser.LTE (lexing_position_start buf)
+  | '>' -> Pre_parser.GT (lexing_position_start buf)
+  | ">=" -> Pre_parser.GTE (lexing_position_start buf)
+  | '&' -> Pre_parser.AMP (lexing_position_start buf)
+  | '|' -> Pre_parser.BAR (lexing_position_start buf)
+  | "<<" -> Pre_parser.LSHIFT (lexing_position_start buf)
+  | ">>" -> Pre_parser.RSHIFT (lexing_position_start buf)
+  | '~' -> Pre_parser.TILDE (lexing_position_start buf)
+  | '(' -> Pre_parser.LPAREN (lexing_position_start buf)
+  | ')' -> Pre_parser.RPAREN (lexing_position_start buf)
+  | ',' -> Pre_parser.COMMA (lexing_position_start buf)
+  | ';' -> Pre_parser.SEMICOLON (lexing_position_start buf)
+  | '.' -> Pre_parser.DOT (lexing_position_start buf)
+
+  (* Identifiers and keywords *)
   | identifier_or_keyword ->
       let uArr = Sedlexing.lexeme buf in
       let str = uchar_array_to_string uArr in
@@ -198,6 +224,9 @@ let rec token buf =
         keyword_of_string str (lexing_position_start buf)
       else 
         Pre_parser.IDENT (str, lexing_position_start buf)
-  | white_space -> token buf
+
+  (* End of file *)
   | eof -> Pre_parser.EOF
+
+  (* Fallback case *)
   | _ -> raise (Lexing_error "Unexpected character")
