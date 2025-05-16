@@ -12,36 +12,13 @@ Inductive prog :=
 
 with sql_stmt :=
   | ALTER_TABLE_STMT  : alter_table_stmt -> sql_stmt
-  | ANALYZE_STMT      : analyze_stmt -> sql_stmt
-  | ATTACH_STMT       : attach_stmt -> sql_stmt
-  | BEGIN_STMT        : begin_stmt -> sql_stmt
-  | COMMIT_STMT       : commit_stmt -> sql_stmt
-  | CREATE_INDEX_STMT : create_index_stmt -> sql_stmt
-  | CREATE_TABLE_STMT : create_table_stmt -> sql_stmt
-  | CREATE_TRIGGER_STMT : create_trigger_stmt -> sql_stmt
-  | CREATE_VIEW_STMT  : create_view_stmt -> sql_stmt
-  | CREATE_VIRTUAL_TABLE_STMT : create_virtual_table_stmt -> sql_stmt
   | DELETE_STMT       : delete_stmt -> sql_stmt
-  | DELETE_STMT_LIMITED : delete_stmt_limited -> sql_stmt
-  | DETACH_STMT       : detach_stmt -> sql_stmt
-  | DROP_INDEX_STMT   : drop_index_stmt -> sql_stmt
-  | DROP_TABLE_STMT   : drop_table_stmt -> sql_stmt
-  | DROP_TRIGGER_STMT : drop_trigger_stmt -> sql_stmt
-  | DROP_VIEW_STMT    : drop_view_stmt -> sql_stmt
   | INSERT_STMT       : insert_stmt -> sql_stmt
-  | PRAGMA_STMT       : pragma_stmt -> sql_stmt
-  | REINDEX_STMT      : reindex_stmt -> sql_stmt
-  | RELEASE_STMT      : release_stmt -> sql_stmt
-  | ROLLBACK_STMT     : rollback_stmt -> sql_stmt
-  | SAVEPOINT_STMT    : savepoint_stmt -> sql_stmt
   | SELECT_STMT       : select_stmt -> sql_stmt
   | UPDATE_STMT       : update_stmt -> sql_stmt
-  | UPDATE_STMT_LIMITED : update_stmt_limited -> sql_stmt
-  | VACUUM_STMT       : vacuum_stmt -> sql_stmt
 
 with schema_table_name :=
   | SCHEMA_NAME_NAME : option str -> str -> schema_table_name
-
 
 with alter_table_stmt :=
   | ALTER_TABLE_STMT_ : schema_table_name -> alter_types -> alter_table_stmt
@@ -57,17 +34,6 @@ with analyze_stmt :=
   | ANALYZE_INDEX_OR_TABLE : str -> analyze_stmt
   | ANALYZE_SCHEMA_INDEX_OR_TABLE : str -> str -> analyze_stmt
 
-with attach_stmt :=
-  | ATTACH_STMT_ : expr -> attach_stmt
-
-with begin_stmt :=
-  | BEGIN_TRANSFERED : begin_ops -> begin_stmt
-  | BEGIN_STMT_ : begin_ops -> begin_stmt
-      
-with begin_ops :=
-  | DEFERRED
-  | IMMEDIATE
-  | EXCLUSIVE
 
 with column_constraint_types :=
   | PRIMARY_CONSTRAINT : incline -> conflict_clause -> bool -> column_constraint
@@ -338,19 +304,14 @@ with insert_stmt :=
   | OTHER_INSERT : insert_statements -> insert_stmt
 
 with insert_statements :=
-  | REPLACE_INTO : schema_table_name -> option alias -> list str ->
-  | INSERT_INTO : schema_table_name -> option alias -> list str ->
-  | INSERT_OR : insert_or_ops -> schema_table_name -> option alias -> list str ->
-
-with insert_or_ops :=
-  | ABORT_OP
-  | FAIL_OP
-  | IGNORE_OP 
-  | REPLACE_OP
-  | ROLLBACK 
+  | REPLACE_INTO : schema_table_name -> option alias -> list str -> insert_body -> insert_statements
+  | INSERT_INTO : schema_table_name -> option alias -> list str -> insert_body -> insert_statements
+  | INSERT_OR : conflict_clause_typs -> schema_table_name -> option alias -> list str -> insert_body -> insert_statements
 
 with insert_body :=
-  | INSERT_VALUES : list expr qq
+  | INSERT_VALUES : list (list expr) ->(* omit clauses for now*) insert_body
+  | INSERT_SELECT : select_stmt -> insert_body
+  | INSERT_DEFAULT 
 
 Require Import ExtrOcamlBasic.
 Require Import ExtrOcamlString.
