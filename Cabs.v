@@ -210,10 +210,10 @@ with delete_from :=
 
 with delete_stmt_limited :=
   | WITH_DELETE_LIMITED : bool -> list common_table_expression -> del_stmt -> delete_from_limited -> delete_stmt
-  | DELETE_STMT_LIMITED : delete_from_limited -> delete_stmt
+  | DELETE_STMT_LIMITED_ : delete_from_limited -> delete_stmt
 
 with delete_from_limited :=
-  | DELETE_FROM : str -> where_expr -> option returning_clause -> 
+  | DELETE_FROM_LIMITED : str -> where_expr -> option returning_clause -> 
       list ordering_term -> delete_from_limited -> expr -> expr_compound_typ -> delete_from_limited
 
 with detach_stmt :=
@@ -245,10 +245,112 @@ with expr :=
   | EXPR_LS : list expr -> expr
       (*Leave it incomplete for now*)
 
-with factored_select_stmt: =
-  | WITH_FACTORED : bool -> list common_table_expression -> select_core -> factored_select_stmt
-  | 
+with factored_select_stmt :=
+  | WITH_FACTORED : bool -> list common_table_expression -> factored_cor_compound -> factored_select_stmt
+  | WITH_FACTORED_EMP : factored_cor_compound -> factored_select_stmt  
 
+with factored_cor_compound :=
+  | FAC : select_core_and_compound_op -> order_limit -> factored_cor_compound
+
+with select_core_and_compound_op :=
+  | SC_CO : list select_core -> list compound_operator -> select_core_and_compound_op
+
+with order_limit :=
+  | ORDER_BY : list ordering_term -> order_limit
+  | ORDER_BY_LIMIT : expr -> expr_compound_typ -> order_limit
+  | ORDER_LIMIT_NONE
+
+with foreign_key_clause :=
+  | FOREIGN_KEY_CLAUSE : foreign_table -> list str -> foreign_key_clause
+
+with foreign_key_body :=
+  | FOREIGN_KEY_ON : del_or_up -> on_ops -> foreign_key_body -> foreign_key_body
+  | FOREIGN_KEY_MATCH : str -> foreign_key_body -> foreign_key_body 
+  | FOREIGN_KEY_DEFERRABLE : bool -> deferrable_when -> foreign_key_body 
+
+with deferrable_when :=
+  | INITIALLY_DEFERRED
+  | IMMEDIATE_DEFERRED
+  | NOT_DEFERRFED
+
+with del_or_up :=
+  | DELETE_OP
+  | UPDATE_OP
+
+with on_ops :=
+  | SET_NULL
+  | SET_DEFAULT
+  | CASCADE
+  | RESTRICT
+  | NO_ACTION
+
+with frame_spec :=
+  | FRAME_SPEC : frame_spec_ops -> frame_spec_body -> frame_spec
+
+with frame_spec_ops :=
+  | RANGE
+  | ROWS
+  | GROUPS
+
+with frame_spec_body :=
+  | BETWEEN : between_body -> and_body -> exclude_framespec -> frame_spec_body
+  | UNBOUNDED : exclude_framespec -> frame_spec_body
+  | EXPR_PRECEDING : expr -> exclude_framespec -> frame_spec_body
+  | CURRENT_ROW : exclude_framespec -> frame_spec_body
+
+with between_body := 
+  | UNBOUNDED_BET
+  | EXPR_PRECEDING_BET : expr -> between_body
+  | CURRENT_ROW_BET 
+  | EXPR_FOLLOWING_BET : expr -> between_body
+
+with and_body :=
+  | EXPR_PRECEDING_AND : expr -> between_body
+  | CURRENT_ROW_AND  
+  | EXPR_FOLLOWING_AND : expr -> between_body
+  | UNBOUNDED_FOLLOWING
+
+with exclude_framespec :=
+  | EXCLUDE_NO_OTHERS
+  | EXCLUDE_CURRENT_ROW
+  | EXCLUDE_GROUP
+  | EXCLUDE_TIES
+  | EXCLUDE_NONE 
+
+with function_arguments :=
+  | EMP
+  | FUNC_ARG : bool -> list expr -> order_by_arg -> function_arguments
+
+with order_by_arg :=
+  | ORDER_BY_ARG : list ordering_term -> order_by_arg
+  | ORDER_NO_ARG
+
+with indexed_column :=
+  | EXPR_INDEXED : expr -> collate_op -> incline -> indexed_column
+  | COLUMN_INDEXED : str -> collate_op -> incline -> indexed_column
+
+with collate_op :=
+  | COLLATE : str -> collate_op
+  | NO_COLLATE
+
+with insert_stmt :=
+  | WITH_INSERT : bool -> list common_table_expression -> insert_statements -> insert_stmt
+  | OTHER_INSERT : insert_statements -> insert_stmt
+
+with insert_statements :=
+  | REPLACE_INTO : schema_table_name -> option alias -> list str ->
+  | INSERT_INTO : schema_table_name -> option alias -> list str ->
+  | INSERT_OR : insert_or_ops -> schema_table_name -> option alias -> list str ->
+
+with insert_or_ops :=
+  | ABORT_OP
+  | FAIL_OP
+  | IGNORE_OP 
+  | REPLACE_OP
+  | ROLLBACK 
+
+with insert_body :=
+  | INSERT_VALUES : list expr qq
 
 Require Import ExtrOcamlBasic.
 Require Import ExtrOcamlString.
