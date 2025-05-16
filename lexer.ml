@@ -4,8 +4,26 @@ open List
 open Sedlexing
 open Uchar
 
+let underscore =  [%sedlex.regexp? '_']
+
 let identifier_or_keyword =
   [%sedlex.regexp? xid_start, Star xid_continue]
+
+let dec_digit = [%sedlex.regexp? '0'..'9']
+let bin_digit = [%sedlex.regexp? '0' | '1']
+let oct_digit = [%sedlex.regexp? '0'..'7']
+
+let dec_literal = [%sedlex.regexp? dec_digit, Star (dec_digit | underscore)]
+let bin_literal = [%sedlex.regexp? "0b", Star (bin_digit | underscore), bin_digit, Star (bin_digit | underscore)]
+let oct_literal = [%sedlex.regexp? "0o", Star (oct_digit | underscore), oct_digit, Star (oct_digit | underscore)]
+let hex_literal = [%sedlex.regexp? "0x", Star (hex_digit | underscore), hex_digit, Star (hex_digit | underscore)]
+
+let float_exponent =
+  [%sedlex.regexp? ('e' | 'E'),  Opt ('+' | '-'), Star(dec_digit | white_space), dec_digit, Star (dec_digit | white_space)]
+
+let integer_literal = [%sedlex.regexp? (dec_literal | bin_literal | oct_literal | hex_literal)]
+ 
+let float_literal = [%sedlex.regexp? dec_literal, '.' | dec_literal, '.', dec_literal, Opt ('.',dec_literal), float_exponent | integer_literal, float_exponent]
 
 (* Function to convert a Uchar array to a string *)
 let uchar_array_to_string (arr: Uchar.t array) : string =
@@ -228,10 +246,15 @@ let rec token buf =
   | "\"" -> read_double_quotes (Buffer.create 17) buf
   | '[' -> read_ident_brack (Buffer.create 17) buf
   | '`' -> read_ident_grave (Buffer.create 17) buf
-  (* End of file *)
+  | integer_literal -> 
+        let uArr = Sedlexing.lexeme buf in
+          let x = uchar_array_to_string uArr in
+    INT_LIT (x, lexing_position_start buf)
+  | float_literal ->
+        let uArr = Sedlexing.lexeme buf in
+          let x = uchar_array_to_string uArr in
+    FLOAT_LIT (x, lexing_position_start buf)
   | eof -> Pre_parser.EOF
-
-  (* Fallback case *)
   | _ -> raise (Lexing_error "Unexpected character")
 
 and read_string buffer buf =

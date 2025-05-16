@@ -359,6 +359,8 @@ let string_of_token = function
   | Parser.WITHOUT loc -> Printf.sprintf "WITHOUT, loc: %s" (string_of_loc loc)
   | Parser.IDENT (x, loc) -> Printf.sprintf "IDENT(%s), loc: %s" x (string_of_loc loc)
   | Parser.STRING_LIT (x, loc) -> Printf.sprintf "STRING_LIT(%s), loc: %s" x (string_of_loc loc)
+  | Parser.INT_LIT (x, loc) -> Printf.sprintf "INT_LIT(%s), loc: %s" x (string_of_loc loc)
+  | Parser.FLOAT_LIT (x, loc) -> Printf.sprintf "FLOAT_LIT(%s), loc: %s" x (string_of_loc loc)
 
 open Format
 
