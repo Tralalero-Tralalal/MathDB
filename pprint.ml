@@ -95,6 +95,29 @@ let convert_token = function
   | Pre_parser.LIMIT loc -> Parser.LIMIT loc
   | Pre_parser.MATCH loc -> Parser.MATCH loc
   | Pre_parser.MATERIALIZED loc -> Parser.MATERIALIZED loc
+  | Pre_parser.MINUS loc -> Parser.MINUS loc
+  | Pre_parser.STAR loc -> Parser.STAR loc
+  | Pre_parser.SLASH loc -> Parser.SLASH loc
+  | Pre_parser.PERCENT loc -> Parser.PERCENT loc
+  | Pre_parser.EQUAL loc -> Parser.EQUAL loc
+  | Pre_parser.DOUBLE_EQUAL loc -> Parser.DOUBLE_EQUAL loc
+  | Pre_parser.BANG_EQUAL loc -> Parser.BANG_EQUAL loc
+  | Pre_parser.NOT_EQUAL loc -> Parser.NOT_EQUAL loc
+  | Pre_parser.LPAREN loc -> Parser.LPAREN loc
+  | Pre_parser.RPAREN loc -> Parser.RPAREN loc
+  | Pre_parser.LT loc -> Parser.LT loc
+  | Pre_parser.LTE loc -> Parser.LTE loc
+  | Pre_parser.GT loc -> Parser.GT loc
+  | Pre_parser.GTE loc -> Parser.GTE loc
+  | Pre_parser.AMP loc -> Parser.AMP loc
+  | Pre_parser.BAR loc -> Parser.BAR loc
+  | Pre_parser.LSHIFT loc -> Parser.LSHIFT loc
+  | Pre_parser.RSHIFT loc -> Parser.RSHIFT loc
+  | Pre_parser.TILDE loc -> Parser.TILDE loc
+  | Pre_parser.COMMA loc -> Parser.COMMA loc
+  | Pre_parser.SEMICOLON loc -> Parser.SEMICOLON loc
+  | Pre_parser.DOT loc -> Parser.DOT loc
+  | Pre_parser.PLUS loc -> Parser.PLUS loc
   | Pre_parser.NATURAL loc -> Parser.NATURAL loc
   | Pre_parser.NO loc -> Parser.NO loc
   | Pre_parser.NOT loc -> Parser.NOT loc
@@ -158,157 +181,182 @@ let convert_token = function
   | Pre_parser.IDENT (id, loc) -> Parser.IDENT (id, loc)
   | Pre_parser.INT_LIT (i, loc) -> Parser.INT_LIT (i, loc)
   | Pre_parser.FLOAT_LIT (f, loc) -> Parser.FLOAT_LIT (f, loc)
-  | Pre_parser.STRING_LIT (f, loc) -> Parser.STRING_LIT (f, loc)
+  | Pre_parser.STRING_LIT (s, loc) -> Parser.STRING_LIT (s, loc)
 
 let string_of_token = function
   | Parser.SELECT loc -> Printf.sprintf "SELECT, loc: %s" (string_of_loc loc)
   | Parser.EOF () -> "EOF"
-  | Parser.ABORT _ -> "ABORT"
-  | Parser.ACTION _ -> "ACTION"
-  | Parser.ADD _ -> "ADD"
-  | Parser.AFTER _ -> "AFTER"
-  | Parser.ALL _ -> "ALL"
-  | Parser.ALTER _ -> "ALTER"
-  | Parser.ALWAYS _ -> "ALWAYS"
-  | Parser.ANALYZE _ -> "ANALYZE"
-  | Parser.AND _ -> "AND"
-  | Parser.AS _ -> "AS"
-  | Parser.ASC _ -> "ASC"
-  | Parser.ATTACH _ -> "ATTACH"
-  | Parser.AUTOINCREMENT _ -> "AUTOINCREMENT"
-  | Parser.BEFORE _ -> "BEFORE"
-  | Parser.BEGIN _ -> "BEGIN"
-  | Parser.BETWEEN _ -> "BETWEEN"
-  | Parser.BY _ -> "BY"
-  | Parser.CASCADE _ -> "CASCADE"
-  | Parser.CASE _ -> "CASE"
-  | Parser.CAST _ -> "CAST"
-  | Parser.CHECK _ -> "CHECK"
-  | Parser.COLLATE _ -> "COLLATE"
-  | Parser.COLUMN _ -> "COLUMN"
-  | Parser.COMMIT _ -> "COMMIT"
-  | Parser.CONFLICT _ -> "CONFLICT"
-  | Parser.CONSTRAINT _ -> "CONSTRAINT"
-  | Parser.CREATE _ -> "CREATE"
-  | Parser.CROSS _ -> "CROSS"
-  | Parser.CURRENT _ -> "CURRENT"
-  | Parser.CURRENT_DATE _ -> "CURRENT_DATE"
-  | Parser.CURRENT_TIME _ -> "CURRENT_TIME"
-  | Parser.CURRENT_TIMESTAMP _ -> "CURRENT_TIMESTAMP"
-  | Parser.DATABASE _ -> "DATABASE"
-  | Parser.DEFAULT _ -> "DEFAULT"
-  | Parser.DEFERRABLE _ -> "DEFERRABLE"
-  | Parser.DEFERRED _ -> "DEFERRED"
-  | Parser.DELETE _ -> "DELETE"
-  | Parser.DESC _ -> "DESC"
-  | Parser.DETACH _ -> "DETACH"
-  | Parser.DISTINCT _ -> "DISTINCT"
-  | Parser.DO _ -> "DO"
-  | Parser.DROP _ -> "DROP"
-  | Parser.EACH _ -> "EACH"
-  | Parser.ELSE _ -> "ELSE"
-  | Parser.END _ -> "END"
-  | Parser.ESCAPE _ -> "ESCAPE"
-  | Parser.EXCEPT _ -> "EXCEPT"
-  | Parser.EXCLUDE _ -> "EXCLUDE"
-  | Parser.EXCLUSIVE _ -> "EXCLUSIVE"
-  | Parser.EXISTS _ -> "EXISTS"
-  | Parser.EXPLAIN _ -> "EXPLAIN"
-  | Parser.FAIL _ -> "FAIL"
-  | Parser.FILTER _ -> "FILTER"
-  | Parser.FIRST _ -> "FIRST"
-  | Parser.FOLLOWING _ -> "FOLLOWING"
-  | Parser.FOR _ -> "FOR"
-  | Parser.FOREIGN _ -> "FOREIGN"
-  | Parser.FROM _ -> "FROM"
-  | Parser.FULL _ -> "FULL"
-  | Parser.GENERATED _ -> "GENERATED"
-  | Parser.GLOB _ -> "GLOB"
-  | Parser.GROUP _ -> "GROUP"
-  | Parser.GROUPS _ -> "GROUPS"
-  | Parser.HAVING _ -> "HAVING"
-  | Parser.IF _ -> "IF"
-  | Parser.IGNORE _ -> "IGNORE"
-  | Parser.IMMEDIATE _ -> "IMMEDIATE"
-  | Parser.IN _ -> "IN"
-  | Parser.INDEX _ -> "INDEX"
-  | Parser.INDEXED _ -> "INDEXED"
-  | Parser.INITIALLY _ -> "INITIALLY"
-  | Parser.INNER _ -> "INNER"
-  | Parser.INSERT _ -> "INSERT"
-  | Parser.INSTEAD _ -> "INSTEAD"
-  | Parser.INTERSECT _ -> "INTERSECT"
-  | Parser.INTO _ -> "INTO"
-  | Parser.IS _ -> "IS"
-  | Parser.ISNULL _ -> "ISNULL"
-  | Parser.JOIN _ -> "JOIN"
-  | Parser.KEY _ -> "KEY"
-  | Parser.LAST _ -> "LAST"
-  | Parser.LEFT _ -> "LEFT"
-  | Parser.LIKE _ -> "LIKE"
-  | Parser.LIMIT _ -> "LIMIT"
-  | Parser.MATCH _ -> "MATCH"
-  | Parser.MATERIALIZED _ -> "MATERIALIZED"
-  | Parser.NATURAL _ -> "NATURAL"
-  | Parser.NO _ -> "NO"
-  | Parser.NOT _ -> "NOT"
-  | Parser.NOTHING _ -> "NOTHING"
-  | Parser.NOTNULL _ -> "NOTNULL"
-  | Parser.NULL _ -> "NULL"
-  | Parser.NULLS _ -> "NULLS"
-  | Parser.OF _ -> "OF"
-  | Parser.OFFSET _ -> "OFFSET"
-  | Parser.ON _ -> "ON"
-  | Parser.OR _ -> "OR"
-  | Parser.ORDER _ -> "ORDER"
-  | Parser.OTHERS _ -> "OTHERS"
-  | Parser.OUTER _ -> "OUTER"
-  | Parser.OVER _ -> "OVER"
-  | Parser.PARTITION _ -> "PARTITION"
-  | Parser.PLAN _ -> "PLAN"
-  | Parser.PRAGMA _ -> "PRAGMA"
-  | Parser.PRECEDING _ -> "PRECEDING"
-  | Parser.PRIMARY _ -> "PRIMARY"
-  | Parser.QUERY _ -> "QUERY"
-  | Parser.RAISE _ -> "RAISE"
-  | Parser.RANGE _ -> "RANGE"
-  | Parser.RECURSIVE _ -> "RECURSIVE"
-  | Parser.REFERENCES _ -> "REFERENCES"
-  | Parser.REGEXP _ -> "REGEXP"
-  | Parser.REINDEX _ -> "REINDEX"
-  | Parser.RELEASE _ -> "RELEASE"
-  | Parser.RENAME _ -> "RENAME"
-  | Parser.REPLACE _ -> "REPLACE"
-  | Parser.RESTRICT _ -> "RESTRICT"
-  | Parser.RETURNING _ -> "RETURNING"
-  | Parser.RIGHT _ -> "RIGHT"
-  | Parser.ROLLBACK _ -> "ROLLBACK"
-  | Parser.ROW _ -> "ROW"
-  | Parser.ROWS _ -> "ROWS"
-  | Parser.SAVEPOINT _ -> "SAVEPOINT"
-  | Parser.SET _ -> "SET"
-  | Parser.TABLE _ -> "TABLE"
-  | Parser.TEMP _ -> "TEMP"
-  | Parser.TEMPORARY _ -> "TEMPORARY"
-  | Parser.THEN _ -> "THEN"
-  | Parser.TIES _ -> "TIES"
-  | Parser.TO _ -> "TO"
-  | Parser.TRANSACTION _ -> "TRANSACTION"
-  | Parser.TRIGGER _ -> "TRIGGER"
-  | Parser.UNBOUNDED _ -> "UNBOUNDED"
-  | Parser.UNION _ -> "UNION"
-  | Parser.UNIQUE _ -> "UNIQUE"
-  | Parser.UPDATE _ -> "UPDATE"
-  | Parser.USING _ -> "USING"
-  | Parser.VACUUM _ -> "VACUUM"
-  | Parser.VALUES _ -> "VALUES"
-  | Parser.VIEW _ -> "VIEW"
-  | Parser.VIRTUAL _ -> "VIRTUAL"
-  | Parser.WHEN _ -> "WHEN"
-  | Parser.WHERE _ -> "WHERE"
-  | Parser.WINDOW _ -> "WINDOW"
-  | Parser.WITH _ -> "WITH"
-  | Parser.WITHOUT _ -> "WITHOUT"
+  | Parser.ABORT loc -> Printf.sprintf "ABORT, loc: %s" (string_of_loc loc)
+  | Parser.ACTION loc -> Printf.sprintf "ACTION, loc: %s" (string_of_loc loc)
+  | Parser.ADD loc -> Printf.sprintf "ADD, loc: %s" (string_of_loc loc)
+  | Parser.AFTER loc -> Printf.sprintf "AFTER, loc: %s" (string_of_loc loc)
+  | Parser.ALL loc -> Printf.sprintf "ALL, loc: %s" (string_of_loc loc)
+  | Parser.ALTER loc -> Printf.sprintf "ALTER, loc: %s" (string_of_loc loc)
+  | Parser.ALWAYS loc -> Printf.sprintf "ALWAYS, loc: %s" (string_of_loc loc)
+  | Parser.ANALYZE loc -> Printf.sprintf "ANALYZE, loc: %s" (string_of_loc loc)
+  | Parser.AND loc -> Printf.sprintf "AND, loc: %s" (string_of_loc loc)
+  | Parser.AS loc -> Printf.sprintf "AS, loc: %s" (string_of_loc loc)
+  | Parser.ASC loc -> Printf.sprintf "ASC, loc: %s" (string_of_loc loc)
+  | Parser.ATTACH loc -> Printf.sprintf "ATTACH, loc: %s" (string_of_loc loc)
+  | Parser.AUTOINCREMENT loc -> Printf.sprintf "AUTOINCREMENT, loc: %s" (string_of_loc loc)
+  | Parser.BEFORE loc -> Printf.sprintf "BEFORE, loc: %s" (string_of_loc loc)
+  | Parser.BEGIN loc -> Printf.sprintf "BEGIN, loc: %s" (string_of_loc loc)
+  | Parser.BETWEEN loc -> Printf.sprintf "BETWEEN, loc: %s" (string_of_loc loc)
+  | Parser.BY loc -> Printf.sprintf "BY, loc: %s" (string_of_loc loc)
+  | Parser.CASCADE loc -> Printf.sprintf "CASCADE, loc: %s" (string_of_loc loc)
+  | Parser.CASE loc -> Printf.sprintf "CASE, loc: %s" (string_of_loc loc)
+  | Parser.CAST loc -> Printf.sprintf "CAST, loc: %s" (string_of_loc loc)
+  | Parser.CHECK loc -> Printf.sprintf "CHECK, loc: %s" (string_of_loc loc)
+  | Parser.COLLATE loc -> Printf.sprintf "COLLATE, loc: %s" (string_of_loc loc)
+  | Parser.COLUMN loc -> Printf.sprintf "COLUMN, loc: %s" (string_of_loc loc)
+  | Parser.COMMIT loc -> Printf.sprintf "COMMIT, loc: %s" (string_of_loc loc)
+  | Parser.CONFLICT loc -> Printf.sprintf "CONFLICT, loc: %s" (string_of_loc loc)
+  | Parser.CONSTRAINT loc -> Printf.sprintf "CONSTRAINT, loc: %s" (string_of_loc loc)
+  | Parser.CREATE loc -> Printf.sprintf "CREATE, loc: %s" (string_of_loc loc)
+  | Parser.CROSS loc -> Printf.sprintf "CROSS, loc: %s" (string_of_loc loc)
+  | Parser.CURRENT loc -> Printf.sprintf "CURRENT, loc: %s" (string_of_loc loc)
+  | Parser.CURRENT_DATE loc -> Printf.sprintf "CURRENT_DATE, loc: %s" (string_of_loc loc)
+  | Parser.CURRENT_TIME loc -> Printf.sprintf "CURRENT_TIME, loc: %s" (string_of_loc loc)
+  | Parser.CURRENT_TIMESTAMP loc -> Printf.sprintf "CURRENT_TIMESTAMP, loc: %s" (string_of_loc loc)
+  | Parser.DATABASE loc -> Printf.sprintf "DATABASE, loc: %s" (string_of_loc loc)
+  | Parser.DEFAULT loc -> Printf.sprintf "DEFAULT, loc: %s" (string_of_loc loc)
+  | Parser.DEFERRABLE loc -> Printf.sprintf "DEFERRABLE, loc: %s" (string_of_loc loc)
+  | Parser.DEFERRED loc -> Printf.sprintf "DEFERRED, loc: %s" (string_of_loc loc)
+  | Parser.DELETE loc -> Printf.sprintf "DELETE, loc: %s" (string_of_loc loc)
+  | Parser.DESC loc -> Printf.sprintf "DESC, loc: %s" (string_of_loc loc)
+  | Parser.DETACH loc -> Printf.sprintf "DETACH, loc: %s" (string_of_loc loc)
+  | Parser.DISTINCT loc -> Printf.sprintf "DISTINCT, loc: %s" (string_of_loc loc)
+  | Parser.DO loc -> Printf.sprintf "DO, loc: %s" (string_of_loc loc)
+  | Parser.DROP loc -> Printf.sprintf "DROP, loc: %s" (string_of_loc loc)
+  | Parser.EACH loc -> Printf.sprintf "EACH, loc: %s" (string_of_loc loc)
+  | Parser.ELSE loc -> Printf.sprintf "ELSE, loc: %s" (string_of_loc loc)
+  | Parser.END loc -> Printf.sprintf "END, loc: %s" (string_of_loc loc)
+  | Parser.ESCAPE loc -> Printf.sprintf "ESCAPE, loc: %s" (string_of_loc loc)
+  | Parser.EXCEPT loc -> Printf.sprintf "EXCEPT, loc: %s" (string_of_loc loc)
+  | Parser.EXCLUDE loc -> Printf.sprintf "EXCLUDE, loc: %s" (string_of_loc loc)
+  | Parser.EXCLUSIVE loc -> Printf.sprintf "EXCLUSIVE, loc: %s" (string_of_loc loc)
+  | Parser.EXISTS loc -> Printf.sprintf "EXISTS, loc: %s" (string_of_loc loc)
+  | Parser.EXPLAIN loc -> Printf.sprintf "EXPLAIN, loc: %s" (string_of_loc loc)
+  | Parser.FAIL loc -> Printf.sprintf "FAIL, loc: %s" (string_of_loc loc)
+  | Parser.FILTER loc -> Printf.sprintf "FILTER, loc: %s" (string_of_loc loc)
+  | Parser.FIRST loc -> Printf.sprintf "FIRST, loc: %s" (string_of_loc loc)
+  | Parser.FOLLOWING loc -> Printf.sprintf "FOLLOWING, loc: %s" (string_of_loc loc)
+  | Parser.FOR loc -> Printf.sprintf "FOR, loc: %s" (string_of_loc loc)
+  | Parser.FOREIGN loc -> Printf.sprintf "FOREIGN, loc: %s" (string_of_loc loc)
+  | Parser.FROM loc -> Printf.sprintf "FROM, loc: %s" (string_of_loc loc)
+  | Parser.FULL loc -> Printf.sprintf "FULL, loc: %s" (string_of_loc loc)
+  | Parser.GENERATED loc -> Printf.sprintf "GENERATED, loc: %s" (string_of_loc loc)
+  | Parser.GLOB loc -> Printf.sprintf "GLOB, loc: %s" (string_of_loc loc)
+  | Parser.GROUP loc -> Printf.sprintf "GROUP, loc: %s" (string_of_loc loc)
+  | Parser.GROUPS loc -> Printf.sprintf "GROUPS, loc: %s" (string_of_loc loc)
+  | Parser.HAVING loc -> Printf.sprintf "HAVING, loc: %s" (string_of_loc loc)
+  | Parser.IF loc -> Printf.sprintf "IF, loc: %s" (string_of_loc loc)
+  | Parser.IGNORE loc -> Printf.sprintf "IGNORE, loc: %s" (string_of_loc loc)
+  | Parser.IMMEDIATE loc -> Printf.sprintf "IMMEDIATE, loc: %s" (string_of_loc loc)
+  | Parser.IN loc -> Printf.sprintf "IN, loc: %s" (string_of_loc loc)
+  | Parser.INDEX loc -> Printf.sprintf "INDEX, loc: %s" (string_of_loc loc)
+  | Parser.INDEXED loc -> Printf.sprintf "INDEXED, loc: %s" (string_of_loc loc)
+  | Parser.INITIALLY loc -> Printf.sprintf "INITIALLY, loc: %s" (string_of_loc loc)
+  | Parser.INNER loc -> Printf.sprintf "INNER, loc: %s" (string_of_loc loc)
+  | Parser.INSERT loc -> Printf.sprintf "INSERT, loc: %s" (string_of_loc loc)
+  | Parser.INSTEAD loc -> Printf.sprintf "INSTEAD, loc: %s" (string_of_loc loc)
+  | Parser.INTERSECT loc -> Printf.sprintf "INTERSECT, loc: %s" (string_of_loc loc)
+  | Parser.INTO loc -> Printf.sprintf "INTO, loc: %s" (string_of_loc loc)
+  | Parser.IS loc -> Printf.sprintf "IS, loc: %s" (string_of_loc loc)
+  | Parser.ISNULL loc -> Printf.sprintf "ISNULL, loc: %s" (string_of_loc loc)
+  | Parser.JOIN loc -> Printf.sprintf "JOIN, loc: %s" (string_of_loc loc)
+  | Parser.KEY loc -> Printf.sprintf "KEY, loc: %s" (string_of_loc loc)
+  | Parser.LAST loc -> Printf.sprintf "LAST, loc: %s" (string_of_loc loc)
+  | Parser.LEFT loc -> Printf.sprintf "LEFT, loc: %s" (string_of_loc loc)
+  | Parser.LIKE loc -> Printf.sprintf "LIKE, loc: %s" (string_of_loc loc)
+  | Parser.LIMIT loc -> Printf.sprintf "LIMIT, loc: %s" (string_of_loc loc)
+  | Parser.MATCH loc -> Printf.sprintf "MATCH, loc: %s" (string_of_loc loc)
+  | Parser.MATERIALIZED loc -> Printf.sprintf "MATERIALIZED, loc: %s" (string_of_loc loc)
+  | Parser.MINUS loc -> Printf.sprintf "MINUS, loc: %s" (string_of_loc loc)
+  | Parser.STAR loc -> Printf.sprintf "STAR, loc: %s" (string_of_loc loc)
+  | Parser.SLASH loc -> Printf.sprintf "SLASH, loc: %s" (string_of_loc loc)
+  | Parser.PERCENT loc -> Printf.sprintf "PERCENT, loc: %s" (string_of_loc loc)
+  | Parser.EQUAL loc -> Printf.sprintf "EQUAL, loc: %s" (string_of_loc loc)
+  | Parser.DOUBLE_EQUAL loc -> Printf.sprintf "DOUBLE_EQUAL, loc: %s" (string_of_loc loc)
+  | Parser.BANG_EQUAL loc -> Printf.sprintf "BANG_EQUAL, loc: %s" (string_of_loc loc)
+  | Parser.NOT_EQUAL loc -> Printf.sprintf "NOT_EQUAL, loc: %s" (string_of_loc loc)
+  | Parser.LPAREN loc -> Printf.sprintf "LPAREN, loc: %s" (string_of_loc loc)
+  | Parser.RPAREN loc -> Printf.sprintf "RPAREN, loc: %s" (string_of_loc loc)
+  | Parser.LT loc -> Printf.sprintf "LT, loc: %s" (string_of_loc loc)
+  | Parser.LTE loc -> Printf.sprintf "LTE, loc: %s" (string_of_loc loc)
+  | Parser.GT loc -> Printf.sprintf "GT, loc: %s" (string_of_loc loc)
+  | Parser.GTE loc -> Printf.sprintf "GTE, loc: %s" (string_of_loc loc)
+  | Parser.AMP loc -> Printf.sprintf "AMP, loc: %s" (string_of_loc loc)
+  | Parser.BAR loc -> Printf.sprintf "BAR, loc: %s" (string_of_loc loc)
+  | Parser.LSHIFT loc -> Printf.sprintf "LSHIFT, loc: %s" (string_of_loc loc)
+  | Parser.RSHIFT loc -> Printf.sprintf "RSHIFT, loc: %s" (string_of_loc loc)
+  | Parser.TILDE loc -> Printf.sprintf "TILDE, loc: %s" (string_of_loc loc)
+  | Parser.COMMA loc -> Printf.sprintf "COMMA, loc: %s" (string_of_loc loc)
+  | Parser.SEMICOLON loc -> Printf.sprintf "SEMICOLON, loc: %s" (string_of_loc loc)
+  | Parser.DOT loc -> Printf.sprintf "DOT, loc: %s" (string_of_loc loc)
+  | Parser.PLUS loc -> Printf.sprintf "PLUS, loc: %s" (string_of_loc loc)
+  | Parser.MATCH loc -> Printf.sprintf "MATCH, loc: %s" (string_of_loc loc)
+  | Parser.MATERIALIZED loc -> Printf.sprintf "MATERIALIZED, loc: %s" (string_of_loc loc)
+  | Parser.NATURAL loc -> Printf.sprintf "NATURAL, loc: %s" (string_of_loc loc)
+  | Parser.NO loc -> Printf.sprintf "NO, loc: %s" (string_of_loc loc)
+  | Parser.NOT loc -> Printf.sprintf "NOT, loc: %s" (string_of_loc loc)
+  | Parser.NOTHING loc -> Printf.sprintf "NOTHING, loc: %s" (string_of_loc loc)
+  | Parser.NOTNULL loc -> Printf.sprintf "NOTNULL, loc: %s" (string_of_loc loc)
+  | Parser.NULL loc -> Printf.sprintf "NULL, loc: %s" (string_of_loc loc)
+  | Parser.NULLS loc -> Printf.sprintf "NULLS, loc: %s" (string_of_loc loc)
+  | Parser.OF loc -> Printf.sprintf "OF, loc: %s" (string_of_loc loc)
+  | Parser.OFFSET loc -> Printf.sprintf "OFFSET, loc: %s" (string_of_loc loc)
+  | Parser.ON loc -> Printf.sprintf "ON, loc: %s" (string_of_loc loc)
+  | Parser.OR loc -> Printf.sprintf "OR, loc: %s" (string_of_loc loc)
+  | Parser.ORDER loc -> Printf.sprintf "ORDER, loc: %s" (string_of_loc loc)
+  | Parser.OTHERS loc -> Printf.sprintf "OTHERS, loc: %s" (string_of_loc loc)
+  | Parser.OUTER loc -> Printf.sprintf "OUTER, loc: %s" (string_of_loc loc)
+  | Parser.OVER loc -> Printf.sprintf "OVER, loc: %s" (string_of_loc loc)
+  | Parser.PARTITION loc -> Printf.sprintf "PARTITION, loc: %s" (string_of_loc loc)
+  | Parser.PLAN loc -> Printf.sprintf "PLAN, loc: %s" (string_of_loc loc)
+  | Parser.PRAGMA loc -> Printf.sprintf "PRAGMA, loc: %s" (string_of_loc loc)
+  | Parser.PRECEDING loc -> Printf.sprintf "PRECEDING, loc: %s" (string_of_loc loc)
+  | Parser.PRIMARY loc -> Printf.sprintf "PRIMARY, loc: %s" (string_of_loc loc)
+  | Parser.QUERY loc -> Printf.sprintf "QUERY, loc: %s" (string_of_loc loc)
+  | Parser.RAISE loc -> Printf.sprintf "RAISE, loc: %s" (string_of_loc loc)
+  | Parser.RANGE loc -> Printf.sprintf "RANGE, loc: %s" (string_of_loc loc)
+  | Parser.RECURSIVE loc -> Printf.sprintf "RECURSIVE, loc: %s" (string_of_loc loc)
+  | Parser.REFERENCES loc -> Printf.sprintf "REFERENCES, loc: %s" (string_of_loc loc)
+  | Parser.REGEXP loc -> Printf.sprintf "REGEXP, loc: %s" (string_of_loc loc)
+  | Parser.REINDEX loc -> Printf.sprintf "REINDEX, loc: %s" (string_of_loc loc)
+  | Parser.RELEASE loc -> Printf.sprintf "RELEASE, loc: %s" (string_of_loc loc)
+  | Parser.RENAME loc -> Printf.sprintf "RENAME, loc: %s" (string_of_loc loc)
+  | Parser.REPLACE loc -> Printf.sprintf "REPLACE, loc: %s" (string_of_loc loc)
+  | Parser.RESTRICT loc -> Printf.sprintf "RESTRICT, loc: %s" (string_of_loc loc)
+  | Parser.RETURNING loc -> Printf.sprintf "RETURNING, loc: %s" (string_of_loc loc)
+  | Parser.RIGHT loc -> Printf.sprintf "RIGHT, loc: %s" (string_of_loc loc)
+  | Parser.ROLLBACK loc -> Printf.sprintf "ROLLBACK, loc: %s" (string_of_loc loc)
+  | Parser.ROW loc -> Printf.sprintf "ROW, loc: %s" (string_of_loc loc)
+  | Parser.ROWS loc -> Printf.sprintf "ROWS, loc: %s" (string_of_loc loc)
+  | Parser.SAVEPOINT loc -> Printf.sprintf "SAVEPOINT, loc: %s" (string_of_loc loc)
+  | Parser.SET loc -> Printf.sprintf "SET, loc: %s" (string_of_loc loc)
+  | Parser.TABLE loc -> Printf.sprintf "TABLE, loc: %s" (string_of_loc loc)
+  | Parser.TEMP loc -> Printf.sprintf "TEMP, loc: %s" (string_of_loc loc)
+  | Parser.TEMPORARY loc -> Printf.sprintf "TEMPORARY, loc: %s" (string_of_loc loc)
+  | Parser.THEN loc -> Printf.sprintf "THEN, loc: %s" (string_of_loc loc)
+  | Parser.TIES loc -> Printf.sprintf "TIES, loc: %s" (string_of_loc loc)
+  | Parser.TO loc -> Printf.sprintf "TO, loc: %s" (string_of_loc loc)
+  | Parser.TRANSACTION loc -> Printf.sprintf "TRANSACTION, loc: %s" (string_of_loc loc)
+  | Parser.TRIGGER loc -> Printf.sprintf "TRIGGER, loc: %s" (string_of_loc loc)
+  | Parser.UNBOUNDED loc -> Printf.sprintf "UNBOUNDED, loc: %s" (string_of_loc loc)
+  | Parser.UNION loc -> Printf.sprintf "UNION, loc: %s" (string_of_loc loc)
+  | Parser.UNIQUE loc -> Printf.sprintf "UNIQUE, loc: %s" (string_of_loc loc)
+  | Parser.UPDATE loc -> Printf.sprintf "UPDATE, loc: %s" (string_of_loc loc)
+  | Parser.USING loc -> Printf.sprintf "USING, loc: %s" (string_of_loc loc)
+  | Parser.VACUUM loc -> Printf.sprintf "VACUUM, loc: %s" (string_of_loc loc)
+  | Parser.VALUES loc -> Printf.sprintf "VALUES, loc: %s" (string_of_loc loc)
+  | Parser.VIEW loc -> Printf.sprintf "VIEW, loc: %s" (string_of_loc loc)
+  | Parser.VIRTUAL loc -> Printf.sprintf "VIRTUAL, loc: %s" (string_of_loc loc)
+  | Parser.WHEN loc -> Printf.sprintf "WHEN, loc: %s" (string_of_loc loc)
+  | Parser.WHERE loc -> Printf.sprintf "WHERE, loc: %s" (string_of_loc loc)
+  | Parser.WINDOW loc -> Printf.sprintf "WINDOW, loc: %s" (string_of_loc loc)
+  | Parser.WITH loc -> Printf.sprintf "WITH, loc: %s" (string_of_loc loc)
+  | Parser.WITHOUT loc -> Printf.sprintf "WITHOUT, loc: %s" (string_of_loc loc)
   | Parser.IDENT (x, loc) -> Printf.sprintf "IDENT(%s), loc: %s" x (string_of_loc loc)
   | Parser.STRING_LIT (x, loc) -> Printf.sprintf "STRING_LIT(%s), loc: %s" x (string_of_loc loc)
 

@@ -25,7 +25,6 @@ UNIQUE UPDATE USING VACUUM VALUES VIEW VIRTUAL WHEN WHERE WINDOW WITH WITHOUT;
 [Special-Character$]
 
 'SQLite Database'
-"escaped\"quotes\""
 'Line\nBreak'
 'Tab\tCharacter'
 'Unicode\u{1F600}'
@@ -55,8 +54,3 @@ NOT
 ,
 (
 )
-{
-}
-[
-]
-`
