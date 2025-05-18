@@ -8,3 +8,4 @@ clean:
 	    -name "*.o" -o -name "*.cm*" -o -name "*.d.byte" -o -name "*.d.native" -o \
 	    -name "*.ml.d" -o -name "Parser.v" -o -name "Parser.mli" -o -name "Parser.ml" \
 	\) -exec rm -f {} +
+	find extraction/ -type f ! -name "_tags" -exec rm -f {} +
