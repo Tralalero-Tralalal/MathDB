@@ -1,7 +1,7 @@
 Require Import Proj.Parser.
 Require Import Proj.Cabs.
 
-Cd "../extraction".
+Cd "extraction".
 
 Separate Extraction program.
 
