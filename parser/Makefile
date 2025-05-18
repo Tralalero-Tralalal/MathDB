@@ -56,13 +56,6 @@ ocaml-build: $(EXTRACTED_DIR)/enter.ml $(EXTRACTED_DIR)/lexer.ml $(EXTRACTED_DIR
 depend:
 	$(COQDEP) $(VFILES) > .depend
 
-# Clean
-clean:
-	rm -f *.vo *.glob *.vok *.vos .*.aux .depend \
-	      Parser.v Parser.mli Parser.ml enter.byte \
-	      *.byte *.o *.cm* *.d.byte *.d.native *.ml.d
-	find $(EXTRACTED_DIR) -type f ! -name "_tags" -exec rm -f {} +
-
 dump-conflicts:
 	$(MENHIR) --explain --dump $(PRE_PARSER_SOURCE)
 -include .depend
