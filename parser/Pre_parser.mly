@@ -20,7 +20,9 @@
 %token <Cabs.loc> MINUS STAR SLASH PERCENT EQUAL DOUBLE_EQUAL BANG_EQUAL NOT_EQUAL LPAREN RPAREN 
 %token <Cabs.loc> LT LTE GT GTE AMP BAR LSHIFT RSHIFT TILDE COMMA SEMICOLON DOT PLUS 
 
-%token <Uchar.t array * Cabs.loc> IDENT INT_LIT FLOAT_LIT STRING_LIT BLOB
+%token <Uchar.t array * Cabs.loc> IDENT STRING_LIT BLOB
+%token <int * Cabs.loc> INT_LIT 
+%token <float * Cabs.loc> FLOAT_LIT
 
 %token EOF
 
@@ -36,7 +38,7 @@ sql_stmt:
   | SELECT { Cabs.PRINT_STMT } 
 
 const:
-  | IDENT { EXPR_LIT (fst $1) }
-  | INT_LIT { EXPR_LIT (fst $1) }
-  | FLOAT_LIT { EXPR_LIT (fst $1) }
-  | STRING_LIT { EXPR_LIT (fst $1) }
+  | IDENT { EXPR_LIT (STR_LIT (fst $1)) }
+  | INT_LIT { EXPR_LIT (INTEGER_LIT (fst $1)) }
+  | FLOAT_LIT { EXPR_LIT (FLOATER_LIT (fst $1)) }
+  | STRING_LIT { EXPR_LIT (STR_LIT (fst $1)) }

@@ -260,10 +260,12 @@ let rec token buf =
   | '`' -> read_ident_grave (Buffer.create 17) buf
   | integer_literal -> 
         let uArr = Sedlexing.lexeme buf in
-    INT_LIT (uArr, lexing_position_start buf)
+          let x = uchar_array_to_string uArr in
+    INT_LIT (int_of_string x, lexing_position_start buf)
   | float_literal ->
         let uArr = Sedlexing.lexeme buf in
-    FLOAT_LIT (uArr, lexing_position_start buf)
+          let x = uchar_array_to_string uArr in
+    FLOAT_LIT (float_of_string x, lexing_position_start buf)
   | eof -> Pre_parser.EOF
   | _ -> raise (Lexing_error "Unexpected character")
 

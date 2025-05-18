@@ -361,8 +361,8 @@ let string_of_token = function
   | Parser.WITHOUT loc -> Printf.sprintf "WITHOUT, loc: %s" (string_of_loc loc)
   | Parser.IDENT (x, loc) -> Printf.sprintf "IDENT(%s), loc: %s" (uchar_array_to_string x) (string_of_loc loc)
   | Parser.STRING_LIT (x, loc) -> Printf.sprintf "STRING_LIT(%s), loc: %s" (uchar_array_to_string x) (string_of_loc loc)
-  | Parser.INT_LIT (x, loc) -> Printf.sprintf "INT_LIT(%s), loc: %s" (uchar_array_to_string x) (string_of_loc loc)
-  | Parser.FLOAT_LIT (x, loc) -> Printf.sprintf "FLOAT_LIT(%s), loc: %s" (uchar_array_to_string x) (string_of_loc loc)
+  | Parser.INT_LIT (x, loc) -> Printf.sprintf "INT_LIT(%d), loc: %s" x (string_of_loc loc)
+  | Parser.FLOAT_LIT (x, loc) -> Printf.sprintf "FLOAT_LIT(%f), loc: %s" x (string_of_loc loc)
   | Parser.BLOB (x, loc) -> Printf.sprintf "BLOB(%s), loc: %s" (uchar_array_to_string x) (string_of_loc loc)
 
 open Format
@@ -372,9 +372,14 @@ let rec print_program fmt = function
 
 and print_sql_stmt fmt = function
   | Cabs.INSERT_STMT (Cabs.WITH_INSERT (const1, const2)) ->
-    Format.fprintf fmt "INSERT with %s and %s\n" (print_const const1) (print_const const2)
+    Format.fprintf fmt "INSERT with %s and %s\n" (print_expr const1) (print_expr const2)
   | _ -> Format.fprintf fmt "Unknown SQL statement\n" (* Added a default case *)
 
-and print_const = function
-  | Cabs.EXPR_LIT s -> (uchar_array_to_string s)
-    | _ -> "Unknown constant" (* Added a default case *)
+and print_expr = function
+  | Cabs.EXPR_LIT s -> (print_lit s)
+  | _ -> "Unknown constant"
+
+and print_lit = function
+  | Cabs.STR_LIT s -> uchar_array_to_string s
+  | Cabs.INTEGER_LIT s -> string_of_int s
+  | Cabs.FLOATER_LIT s -> string_of_float s

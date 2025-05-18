@@ -25,7 +25,9 @@ Require Import Proj.Cabs.
 %token <Cabs.loc> MINUS STAR SLASH PERCENT EQUAL DOUBLE_EQUAL BANG_EQUAL NOT_EQUAL LPAREN RPAREN 
 %token <Cabs.loc> LT LTE GT GTE AMP BAR LSHIFT RSHIFT TILDE COMMA SEMICOLON DOT PLUS 
 
-%token <Cabs.uchars * Cabs.loc> IDENT INT_LIT FLOAT_LIT STRING_LIT BLOB
+%token <Cabs.uchars * Cabs.loc> IDENT STRING_LIT BLOB
+%token <Cabs.integer * Cabs.loc> INT_LIT 
+%token <Cabs.floater * Cabs.loc> FLOAT_LIT
 
 %token EOF
 
@@ -42,7 +44,7 @@ sql_stmt:
   | INSERT const const SEMICOLON { Cabs.INSERT_STMT (WITH_INSERT $2 $3) }
 
 const:
-  | IDENT { EXPR_LIT (fst $1) }
-  | INT_LIT { EXPR_LIT (fst $1) }
-  | FLOAT_LIT { EXPR_LIT (fst $1) }
-  | STRING_LIT { EXPR_LIT (fst $1) }
+  | IDENT { EXPR_LIT (STR_LIT (fst $1)) }
+  | INT_LIT { EXPR_LIT (INTEGER_LIT (fst $1)) }
+  | FLOAT_LIT { EXPR_LIT (FLOATER_LIT (fst $1)) }
+  | STRING_LIT { EXPR_LIT (STR_LIT (fst $1)) }
