@@ -25,10 +25,20 @@ let integer_literal = [%sedlex.regexp? (dec_literal | bin_literal | oct_literal 
  
 let float_literal = [%sedlex.regexp? dec_literal, '.' | dec_literal, '.', dec_literal, Opt ('.',dec_literal), float_exponent | integer_literal, float_exponent]
 
-(* Function to convert a Uchar array to a string *)
+let string_to_uchar_array (s : string) : Uchar.t array =
+  let len = String.length s in
+  let arr = Array.make len Uchar.min in
+  for i = 0 to len - 1 do
+    arr.(i) <- Uchar.of_char (String.get s i)
+  done;
+  arr
+
 let uchar_array_to_string (arr: Uchar.t array) : string =
   let x = Array.map Uchar.to_char arr in
   Stdlib.String.init (Array.length x) (Array.get x)
+
+let buffer_add_utf_8_uchar_array (b : Buffer.t) (uchars : Uchar.t array) : unit =
+  Array.iter (fun u -> Buffer.add_utf_8_uchar b u) uchars
 
 (* Lexer utilities *)
 let pos buf = lexing_position_start buf
@@ -241,7 +251,7 @@ let rec token buf =
       if is_keyword str then
         keyword_of_string str (lexing_position_start buf)
       else 
-        Pre_parser.IDENT (str, lexing_position_start buf)
+        Pre_parser.IDENT (uArr, lexing_position_start buf)
   | "'" -> read_string (Buffer.create 17) buf 
   | "X'" -> read_blob (Buffer.create 17) buf  
   | "x'" -> read_blob (Buffer.create 17) buf 
@@ -250,24 +260,22 @@ let rec token buf =
   | '`' -> read_ident_grave (Buffer.create 17) buf
   | integer_literal -> 
         let uArr = Sedlexing.lexeme buf in
-          let x = uchar_array_to_string uArr in
-    INT_LIT (x, lexing_position_start buf)
+    INT_LIT (uArr, lexing_position_start buf)
   | float_literal ->
         let uArr = Sedlexing.lexeme buf in
-          let x = uchar_array_to_string uArr in
-    FLOAT_LIT (x, lexing_position_start buf)
+    FLOAT_LIT (uArr, lexing_position_start buf)
   | eof -> Pre_parser.EOF
   | _ -> raise (Lexing_error "Unexpected character")
 
 and read_string buffer buf =
   match%sedlex buf with
-    | "'" ->  (* End of string *)
-      Pre_parser.STRING_LIT ((Buffer.contents buffer), lexing_position_start buf)
-    | "''" ->  (* Escaped single quote *)
-      Buffer.add_char buffer '\'';
+    | "'" ->  
+      Pre_parser.STRING_LIT (string_to_uchar_array (Buffer.contents buffer), lexing_position_start buf)
+    | "''" -> 
+      Buffer.add_utf_8_uchar buffer (Uchar.of_char '\'');
       read_string buffer buf
     | Plus (Compl (Chars "'")) ->  (* Normal string content *)
-      Buffer.add_string buffer (Utf8.lexeme buf);
+      buffer_add_utf_8_uchar_array buffer (string_to_uchar_array (Utf8.lexeme buf));
       read_string buffer buf
     | eof -> failwith "Unterminated string literal"
     | _ -> failwith "Illegal character in string literal"
@@ -275,12 +283,12 @@ and read_string buffer buf =
 and read_blob buffer buf =
   match%sedlex buf with
     | "'" ->  (* End of string *)
-      Pre_parser.BLOB ((Buffer.contents buffer), lexing_position_start buf)
-    | "''" ->  (* Escaped single quote *)
+      Pre_parser.BLOB (string_to_uchar_array (Buffer.contents buffer), lexing_position_start buf)
+    | "''" ->  
       Buffer.add_char buffer '\'';
       read_string buffer buf
     | Plus (Compl (Chars "'")) ->  (* Normal string content *)
-      Buffer.add_string buffer (Utf8.lexeme buf);
+      buffer_add_utf_8_uchar_array buffer (string_to_uchar_array (Utf8.lexeme buf));
       read_blob buffer buf
     | eof -> failwith "Unterminated string literal"
     | _ -> failwith "Illegal character in string literal"
@@ -289,12 +297,12 @@ and read_double_quotes buffer buf =
     match%sedlex buf with
       | "\"" -> 
         if is_keyword (Buffer.contents buffer) then 
-          Pre_parser.IDENT ((Buffer.contents buffer), lexing_position_start buf)
+          Pre_parser.IDENT (string_to_uchar_array (Buffer.contents buffer), lexing_position_start buf)
         else 
-          Pre_parser.STRING_LIT ((Buffer.contents buffer), lexing_position_start buf)
+          Pre_parser.STRING_LIT (string_to_uchar_array (Buffer.contents buffer), lexing_position_start buf)
 
       | Plus (Compl (Chars "\"")) ->  (* Normal string content *)
-        Buffer.add_string buffer (Utf8.lexeme buf);
+        buffer_add_utf_8_uchar_array buffer (string_to_uchar_array (Utf8.lexeme buf));
           read_double_quotes buffer buf
 
       | eof -> failwith "Unterminated string literal"
@@ -302,21 +310,21 @@ and read_double_quotes buffer buf =
 
 and read_ident_brack buffer buf =
   match%sedlex buf with
-    | "]" ->  (* End of the identifier, closing bracket *)
-      Pre_parser.IDENT ((Buffer.contents buffer), lexing_position_start buf)
-    | Plus (Compl (Chars "]")) ->  (* Normal identifier content *)
-      Buffer.add_string buffer (Utf8.lexeme buf);
-      read_ident_brack buffer buf  (* Keep reading until we hit "]" *)
+    | "]" ->  
+      Pre_parser.IDENT (string_to_uchar_array (Buffer.contents buffer), lexing_position_start buf)
+    | Plus (Compl (Chars "]")) ->  
+      buffer_add_utf_8_uchar_array buffer (string_to_uchar_array (Utf8.lexeme buf));
+      read_ident_brack buffer buf  
     | eof -> failwith "Unterminated identifier"
     | _ -> failwith "Illegal character in identifier"
 
 
 and read_ident_grave buffer buf =
   match%sedlex buf with
-    | "`" ->  (* End of the identifier, closing bracket *)
-      Pre_parser.IDENT ((Buffer.contents buffer), lexing_position_start buf)
-    | Plus (Compl (Chars "`")) ->  (* Normal identifier content *)
+    | "`" ->  
+      Pre_parser.IDENT (string_to_uchar_array (Buffer.contents buffer), lexing_position_start buf)
+    | Plus (Compl (Chars "`")) -> 
       Buffer.add_string buffer (Utf8.lexeme buf);
-      read_ident_grave buffer buf  (* Keep reading until we hit "]" *)
+      read_ident_grave buffer buf  
     | eof -> failwith "Unterminated identifier"
     | _ -> failwith "Illegal character in identifier"

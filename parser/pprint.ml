@@ -2,6 +2,7 @@
   open Pre_parser
   open Cabs
   open Uchar
+  open Lexer
 
 let string_of_loc (loc : Lexing.position) =
   Printf.sprintf "line: %d, offset: %d" loc.pos_lnum (loc.pos_cnum - loc.pos_bol)
@@ -358,11 +359,11 @@ let string_of_token = function
   | Parser.WINDOW loc -> Printf.sprintf "WINDOW, loc: %s" (string_of_loc loc)
   | Parser.WITH loc -> Printf.sprintf "WITH, loc: %s" (string_of_loc loc)
   | Parser.WITHOUT loc -> Printf.sprintf "WITHOUT, loc: %s" (string_of_loc loc)
-  | Parser.IDENT (x, loc) -> Printf.sprintf "IDENT(%s), loc: %s" x (string_of_loc loc)
-  | Parser.STRING_LIT (x, loc) -> Printf.sprintf "STRING_LIT(%s), loc: %s" x (string_of_loc loc)
-  | Parser.INT_LIT (x, loc) -> Printf.sprintf "INT_LIT(%s), loc: %s" x (string_of_loc loc)
-  | Parser.FLOAT_LIT (x, loc) -> Printf.sprintf "FLOAT_LIT(%s), loc: %s" x (string_of_loc loc)
-  | Parser.BLOB (x, loc) -> Printf.sprintf "BLOB(%s), loc: %s" x (string_of_loc loc)
+  | Parser.IDENT (x, loc) -> Printf.sprintf "IDENT(%s), loc: %s" (uchar_array_to_string x) (string_of_loc loc)
+  | Parser.STRING_LIT (x, loc) -> Printf.sprintf "STRING_LIT(%s), loc: %s" (uchar_array_to_string x) (string_of_loc loc)
+  | Parser.INT_LIT (x, loc) -> Printf.sprintf "INT_LIT(%s), loc: %s" (uchar_array_to_string x) (string_of_loc loc)
+  | Parser.FLOAT_LIT (x, loc) -> Printf.sprintf "FLOAT_LIT(%s), loc: %s" (uchar_array_to_string x) (string_of_loc loc)
+  | Parser.BLOB (x, loc) -> Printf.sprintf "BLOB(%s), loc: %s" (uchar_array_to_string x) (string_of_loc loc)
 
 open Format
 
@@ -375,5 +376,5 @@ and print_sql_stmt fmt = function
   | _ -> Format.fprintf fmt "Unknown SQL statement\n" (* Added a default case *)
 
 and print_const = function
-  | Cabs.EXPR_LIT s -> s
-  | _ -> "Unknown constant" (* Added a default case *)
+  | Cabs.EXPR_LIT s -> (uchar_array_to_string s)
+    | _ -> "Unknown constant" (* Added a default case *)
