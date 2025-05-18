@@ -1,7 +1,7 @@
 Require Import Proj.Parser.
 Require Import Proj.Cabs.
 
-Cd "extraction".
+Set Extraction Output Directory "./extraction/".
 
 Separate Extraction program.
 

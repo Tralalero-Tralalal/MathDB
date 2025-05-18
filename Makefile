@@ -27,7 +27,7 @@ $(EXTRACTED_DIR)/%.vo: $(EXTRACTED_DIR)/%.v
 
 # OCaml build
 ocaml-build:
-	cd $(EXTRACTED_DIR) && $(OCAMLBUILD) enter.native
+	cd $(EXTRACTED_DIR) && $(OCAMLBUILD) enter.native && mv enter.native ../
 
 depend:
 	$(COQDEP) $(VFILES) > .depend
@@ -39,7 +39,6 @@ clean:
 	    -name "*.o" -o -name "*.cm*" -o -name "*.d.byte" -o -name "*.d.native" -o \
 	    -name "*.ml.d" -o -name "Parser.v" -o -name "Parser.mli" -o -name "Parser.ml" \
 	\) -exec rm -f {} +
-
 	find $(EXTRACTED_DIR)/ -type f \
 	    \( ! -name "_tags" -a ! -name "_CoqProject" -a ! -path "$(EXTRACTED_DIR)/MenhirLib/*" \) \
 	    -exec rm -f {} +
