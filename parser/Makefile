@@ -1,4 +1,5 @@
 EXTRACTED_DIR = ../extraction
+THEORIES_DIR = ../theories
 MENHIR = menhir
 
 PARSER_SOURCE = Parser.vy
@@ -7,7 +8,7 @@ PRE_PARSER_SOURCE = Pre_parser.mly
 
 .PHONY: all prepare
 
-all: prepare
+prepare_theories: $(THEORIES_DIR)/Cabs.v
 
 prepare: $(EXTRACTED_DIR)/$(PARSER_OUTPUT) \
          $(EXTRACTED_DIR)/Cabs.v \
@@ -16,6 +17,9 @@ prepare: $(EXTRACTED_DIR)/$(PARSER_OUTPUT) \
          $(EXTRACTED_DIR)/lexer.ml \
          $(EXTRACTED_DIR)/pprint.ml \
          $(EXTRACTED_DIR)/Pre_parser.mly
+
+$(THEORIES_DIR)/Cabs.v: Cabs.v | $(THEORIES_DIR)
+	cp $< $@
 
 $(EXTRACTED_DIR):
 	mkdir -p $@

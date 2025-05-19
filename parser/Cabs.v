@@ -29,10 +29,3 @@ with insert_body :=
   | INSERT_VALUES : list (list expr) ->(* omit clauses for now*) insert_body
   | INSERT_DEFAULT.
 
-Require Import ExtrOcamlBasic.
-Require Import ExtrOcamlString.
-
-Extract Constant loc => "Lexing.position".
-Extract Constant uchars => "Uchar.t array".
-Extract Constant integer => "int".
-Extract Constant floater => "float".
