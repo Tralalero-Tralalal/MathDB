@@ -1,4 +1,8 @@
+exception Parse_error of string
+exception Lexing_error of string
+
 open Str
+open Cabs
 
 let int_literal_re = Str.regexp "[0-9]+";;
 let float_literal_re = Str.regexp "[0-9]+\\.[0-9]+";;
@@ -9,15 +13,20 @@ type token =
   | Identifier of string
   | Star
   | Comma
+  | Semi
   | Literal of literal
-  | Eof
 
 and literal =
   | Int_lit of int
   | Float_lit of float
   | String_lit of string
 
-let is_keyword s = List.mem s ["INSERT"]
+type errors =
+  | Parse_error of string
+  | Lexing_error of string
+
+
+let is_keyword s = List.mem s ["INSERT"; "PRINT"]
 
 let rec tokenize (s : string) : token list =
   let words = String.split_on_char ' ' s in
@@ -25,6 +34,7 @@ let rec tokenize (s : string) : token list =
     match word with
     | "*" -> Star
     | "," -> Comma
+    | ";" -> Semi
     | w when is_keyword (String.uppercase_ascii w) -> Keyword (String.uppercase_ascii w)
     | w when Str.string_match float_literal_re w 0 ->
         Literal (Float_lit (float_of_string w))
@@ -34,6 +44,7 @@ let rec tokenize (s : string) : token list =
         let str_val = Str.matched_group 1 w in
         Literal (String_lit str_val)
     | w -> Identifier w
+    | _ -> raise (Lexing_error "lexing error")
   ) words
 
 let string_of_token = function
@@ -41,6 +52,7 @@ let string_of_token = function
   | Identifier id     -> Printf.sprintf "Identifier(%s)" id
   | Star              -> "Star(*)"
   | Comma             -> "Comma(,)"
+  | Semi              -> "SEMI"
   | Literal (Int_lit i)      -> Printf.sprintf "IntLiteral(%d)" i
   | Literal (Float_lit f)    -> Printf.sprintf "FloatLiteral(%f)" f
   | Literal (String_lit str) -> Printf.sprintf "StringLiteral(\"%s\")" str
@@ -50,3 +62,19 @@ let print_tokens tokens =
     Printf.printf "%s\n" (string_of_token tok)
   ) tokens
 
+let rec parse = function
+    | Keyword("INSERT") :: rest -> Cabs.INSERT_STMT (parse_args rest)
+    | [Keyword("PRINT"); Semi ]-> Cabs.PRINT_STMT
+    | _ -> raise (Parse_error "must begin with a keyword!")
+
+and parse_args = function
+    | [Literal(x); Literal(y); Semi] -> Cabs.WITH_INSERT (parse_lits x, parse_lits y)
+    | [Literal(x); Literal(y)] -> raise (Parse_error "forgor semi")
+    | _ -> raise (Parse_error "Incorrect num of args, expect 2")
+
+and parse_lits = function
+    | Int_lit(i) -> Cabs.EXPR_LIT (Cabs.INTEGER_LIT i)
+    | Float_lit(f) -> Cabs.EXPR_LIT (Cabs.FLOATER_LIT f)
+    | String_lit(s) -> Cabs.EXPR_LIT (Cabs.STR_LIT s)
+    | _ -> raise (Parse_error "What the helly")
+  
