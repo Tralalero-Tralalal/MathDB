@@ -44,7 +44,6 @@ let rec tokenize (s : string) : token list =
         let str_val = Str.matched_group 1 w in
         Literal (String_lit str_val)
     | w -> Identifier w
-    | _ -> raise (Lexing_error "lexing error")
   ) words
 
 let string_of_token = function
