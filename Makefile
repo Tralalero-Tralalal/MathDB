@@ -11,7 +11,7 @@ MENHIR = menhir
 OCAMLBUILD = ocamlbuild -use-ocamlfind -use-menhir
 
 # === V Files and Targets ===
-VFILES_EXE = $(EXTRACTED_DIR)/Cabs.v $(EXTRACTED_DIR)/Parser.v $(EXTRACTED_DIR)/extraction.v
+VFILES_EXE = $(EXTRACTED_DIR)/Cabs.v $(EXTRACTED_DIR)/extraction.v 
 VOFILES_EXE = $(VFILES_EXE:.v=.vo)
 
 VFILES_THEORIES = $(THEORIES_DIR)/Cabs.v $(THEORIES_DIR)/schema.v 

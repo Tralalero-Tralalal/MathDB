@@ -6,21 +6,12 @@ Definition Vec (A : Type) : nat -> Type :=
                | S n => prod A (vec n)
                end.
 
-(*
-Record row := {
-  first_name: list Cabs.integer
-  last_name: list Cabs.integer
-  age: Cabs.integer
-}.
+Definition id_size := 4.
+Definition username_size := 32.
+Definition email_size := 255.
 
+Definition id_offset := 0.
+Definition username_offset := id_offset + id_size.
+Definition email_offset := username_offset + username_size.
 
-Definition table : list row := nil. 
-
-Definition create_row (f_name : list Cabs.integer) (l_name : list Cabs.integer) (a : Cabs.integer) : row := {|
-  first_name := f_name;
-  last_name := l_name;
-  age := a
-|}.
-
-Definition add_row_to_table (r : row) := (r :: table)
-*)
+Definition row_size := id_size + username_size + email_size.

@@ -28,4 +28,3 @@ with insert_stmt :=
 with insert_body :=
   | INSERT_VALUES : list (list expr) ->(* omit clauses for now*) insert_body
   | INSERT_DEFAULT.
-
