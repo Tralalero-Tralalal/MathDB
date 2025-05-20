@@ -2,10 +2,10 @@ From Stdlib Require Import String.
 From Stdlib Require Import Ascii.
 
 Parameter loc : Type.
-Parameter uchars : Type.
 Parameter integer : Type.
 Parameter floater : Type.
 Parameter char_code : Type.
+Parameter str : Type.
 
 Inductive prog :=
   | PROGRAM : sql_stmt -> prog
@@ -18,7 +18,7 @@ with expr :=
   | EXPR_LIT : constant -> expr
       (*Leave it incomplete for now*)
 with constant :=
-  | STR_LIT : uchars -> constant
+  | STR_LIT : str -> constant
   | INTEGER_LIT : integer -> constant
   | FLOATER_LIT : floater -> constant
 
