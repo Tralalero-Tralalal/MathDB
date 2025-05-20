@@ -5,10 +5,9 @@ PARSER_DIR = parser
 SCHEMA_DIR = schema
 
 # === Tools ===
-COQC = coqc -I . -Q $(EXTRACTED_DIR) Proj -Q $(EXTRACTED_DIR)/MenhirLib MenhirLib
-COQDEP = coqdep -Q $(EXTRACTED_DIR) Proj -Q $(EXTRACTED_DIR)/MenhirLib MenhirLib
-MENHIR = menhir
-OCAMLBUILD = ocamlbuild -use-ocamlfind -use-menhir
+COQC = coqc -I . -Q $(EXTRACTED_DIR) Proj  
+COQDEP = coqdep -Q $(EXTRACTED_DIR) Proj 
+OCAMLBUILD = ocamlbuild -use-ocamlfind -pkg str
 
 # === V Files and Targets ===
 VFILES_EXE = $(EXTRACTED_DIR)/Cabs.v $(EXTRACTED_DIR)/extraction.v 

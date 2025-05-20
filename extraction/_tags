@@ -1,3 +1,0 @@
-
-true: package(menhirLib)
-true: package(sedlex.ppx)
