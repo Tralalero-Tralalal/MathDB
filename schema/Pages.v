@@ -9,3 +9,7 @@ Inductive table :=
 
 Inductive row :=
   | ROW : Cabs.integer -> Cabs.str -> row.
+
+
+Extract Constant Pages.pages_type => "Bytes.t option array".
+

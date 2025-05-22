@@ -22,7 +22,7 @@ let serialize_row (r : Pages.row) : bytes =
   let (Pages.ROW (id, name)) = r in
   Bytes.set_int8 buffer 0 id;
   let write_fixed_string s offset size =
-    let padded = String.sub (s ^ String.make size '\000') 0 size in
+    let padded = Stdlib.String.sub (s ^ Stdlib.String.make size '\000') 0 size in
     Bytes.blit_string padded 0 buffer offset size
   in
   write_fixed_string name id_size name_size;
@@ -55,9 +55,7 @@ let row_slot (tbl : table) (row_num : int) : bytes * int =
 let execute_insert (tbl : table) (r : row) =
   let (TABLE (num_rows, pages)) = tbl in
   if num_rows >= table_max_rows then begin
-    print_int num_rows;
-    print_int table_max_rows;
-    raise (Full_error "skibidi"); 
+    raise (Full_error "inflation made me too full"); 
     end
   else
     let serialized = serialize_row r in

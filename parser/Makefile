@@ -1,21 +1,17 @@
 EXTRACTED_DIR = ../extraction
-THEORIES_DIR = ../theories
 MENHIR = menhir
 
 
 .PHONY: all prepare
 
-prepare_theories: $(THEORIES_DIR)/Cabs.v
-
 prepare: $(EXTRACTED_DIR)/Cabs.v \
          $(EXTRACTED_DIR)/enter.ml \
-         $(EXTRACTED_DIR)/lexer.ml \
+         $(EXTRACTED_DIR)/Lexer.v \
 				 $(EXTRACTED_DIR)/extraction.v \
 				 $(EXTRACTED_DIR)/schema.ml \
-				 $(EXTRACTED_DIR)/Pages.v
+				 $(EXTRACTED_DIR)/Pages.v \
+				 $(EXTRACTED_DIR)/regex.ml
 
-$(THEORIES_DIR)/Cabs.v: Cabs.v | $(THEORIES_DIR)
-	cp $< $@
 
 $(EXTRACTED_DIR):
 	mkdir -p $@
@@ -23,7 +19,10 @@ $(EXTRACTED_DIR):
 $(EXTRACTED_DIR)/enter.ml: enter.ml | $(EXTRACTED_DIR)
 	cp $< $@
 
-$(EXTRACTED_DIR)/lexer.ml: lexer.ml | $(EXTRACTED_DIR)
+$(EXTRACTED_DIR)/regex.ml: regex.ml | $(EXTRACTED_DIR)
+	cp $< $@
+
+$(EXTRACTED_DIR)/Lexer.v: Lexer.v | $(EXTRACTED_DIR)
 	cp $< $@
 
 $(EXTRACTED_DIR)/Cabs.v: Cabs.v | $(EXTRACTED_DIR)
