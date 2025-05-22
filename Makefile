@@ -10,10 +10,10 @@ COQDEP = coqdep -Q $(EXTRACTED_DIR) Proj
 OCAMLBUILD = ocamlbuild -use-ocamlfind -pkg str
 
 # === V Files and Targets ===
-VFILES_EXE = $(EXTRACTED_DIR)/Cabs.v $(EXTRACTED_DIR)/extraction.v 
+VFILES_EXE = $(EXTRACTED_DIR)/Cabs.v $(EXTRACTED_DIR)/Pages.v $(EXTRACTED_DIR)/extraction.v 
 VOFILES_EXE = $(VFILES_EXE:.v=.vo)
 
-VFILES_THEORIES = $(THEORIES_DIR)/Cabs.v $(THEORIES_DIR)/schema.v 
+VFILES_THEORIES = $(THEORIES_DIR)/Cabs.v $(THEORIES_DIR)/Pages.v 
 VOFILES_THEORIES = $(VFILES_THEORIES:.v=.vo)
 
 .PHONY: all build_exe build_theories prepare prepare_theories ocaml-build clean depend

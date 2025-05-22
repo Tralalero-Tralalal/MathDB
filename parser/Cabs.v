@@ -4,7 +4,6 @@ From Stdlib Require Import Ascii.
 Parameter loc : Type.
 Parameter integer : Type.
 Parameter floater : Type.
-Parameter char_code : Type.
 Parameter str : Type.
 
 Inductive prog :=

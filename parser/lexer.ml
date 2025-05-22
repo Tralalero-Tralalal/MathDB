@@ -21,21 +21,16 @@ and literal =
   | Float_lit of float
   | String_lit of string
 
-type errors =
-  | Parse_error of string
-  | Lexing_error of string
-
-
 let is_keyword s = List.mem s ["INSERT"; "PRINT"]
 
 let rec tokenize (s : string) : token list =
-  let words = String.split_on_char ' ' s in
+  let words = Stdlib.String.split_on_char ' ' s in
   List.map (fun word ->
     match word with
     | "*" -> Star
     | "," -> Comma
     | ";" -> Semi
-    | w when is_keyword (String.uppercase_ascii w) -> Keyword (String.uppercase_ascii w)
+    | w when is_keyword (Stdlib.String.uppercase_ascii w) -> Keyword (Stdlib.String.uppercase_ascii w)
     | w when Str.string_match float_literal_re w 0 ->
         Literal (Float_lit (float_of_string w))
     | w when Str.string_match int_literal_re w 0 ->
