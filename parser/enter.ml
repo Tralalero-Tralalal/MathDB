@@ -32,14 +32,14 @@ and exec_lit tbl (f : Cabs.expr) (l : Cabs.expr) : table =
     let name = get_str b in
     let row = ROW (id, name) in
     let updated_tbl = execute_insert tbl row in
-    Printf.printf "Insert(%d, %s).\n" id name;
+    Printf.printf "Insert(%d, %s).\n" id (Regex.char_list_to_string name);
     updated_tbl
   | _, _ -> print_endline "errors with literals"; tbl
 
 and get_str (ast : Cabs.constant) =
   match ast with
-  | STR_LIT s -> char_list_to_string s
-  | _ -> print_endline "can't use this lit, will instead add NULL string"; "NULL"
+  | STR_LIT s ->  s
+  | _ -> print_endline "can't use this lit, will instead add NULL string"; (string_to_char_list "NULL")
  
 and get_int (ast : Cabs.constant) =
   match ast with

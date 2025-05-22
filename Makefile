@@ -13,7 +13,7 @@ OCAMLBUILD = ocamlbuild -use-ocamlfind -pkg zarith -pkg str
 VFILES_EXE = $(EXTRACTED_DIR)/Cabs.v $(EXTRACTED_DIR)/Lexer.v $(EXTRACTED_DIR)/Pages.v $(EXTRACTED_DIR)/extraction.v  
 VOFILES_EXE = $(VFILES_EXE:.v=.vo)
 
-VFILES_THEORIES = $(THEORIES_DIR)/Cabs.v $(THEORIES_DIR)/Pages.v $(THEORIES_DIR)/Lexer.v  
+VFILES_THEORIES = $(THEORIES_DIR)/Cabs.v $(THEORIES_DIR)/Pages.v $(THEORIES_DIR)/Lexer.v 
 VOFILES_THEORIES = $(VFILES_THEORIES:.v=.vo)
 
 .PHONY: all build_exe build_theories prepare prepare_theories ocaml-build clean depend

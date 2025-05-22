@@ -20,12 +20,13 @@ let table_max_rows = rows_per_page * table_max_pages
 let serialize_row (r : Pages.row) : bytes =
   let buffer = Bytes.create row_size in
   let (Pages.ROW (id, name)) = r in
-  Bytes.set_int8 buffer 0 id;
+  let id32 = Int32.of_int id in
+  Bytes.set_int32_le buffer 0 id32;
   let write_fixed_string s offset size =
     let padded = Stdlib.String.sub (s ^ Stdlib.String.make size '\000') 0 size in
-    Bytes.blit_string padded 0 buffer offset size
+    Bytes.blit_string padded 0 buffer offset size;
   in
-  write_fixed_string name id_size name_size;
+  write_fixed_string (Regex.char_list_to_string name) id_size name_size;
   buffer
 
 let deserialize_row (b : bytes) : row =
@@ -33,9 +34,9 @@ let deserialize_row (b : bytes) : row =
     let raw = Bytes.sub_string b offset size in
     try Stdlib.String.sub raw 0 (Stdlib.String.index raw '\000') with Not_found -> raw
   in
-  let id = Bytes.get_int8 b 0 in
-  let name = read_fixed_string id_size name_size in
-  Pages.ROW (id, name)  
+  let id = Int32.to_int (Bytes.get_int32_le b 0) in
+  let name = (Regex.string_to_char_list (read_fixed_string id_size name_size)) in
+  Pages.ROW (id, name) 
 
 let row_slot (tbl : table) (row_num : int) : bytes * int =
   let (TABLE (num_rows, pages)) = tbl in
@@ -74,5 +75,5 @@ let execute_select (tbl : table)  =
     let (page, offset) = row_slot tbl i in
     let row_bytes = Bytes.sub page offset row_size in
     let Pages.ROW (id, name) = deserialize_row row_bytes in
-    Printf.printf "(%d, %s)\n" id name
+    Printf.printf "(%d, %s)\n" id (Regex.char_list_to_string name)
   done;
