@@ -9,18 +9,37 @@ let tbl : table =
   pages.(1) <- Some prealloc_page;
   TABLE (0, pages)
 
-let make_row (first : Cabs.constant) (second : Cabs.constant) : row =
-  let id =
-    match first with
-    | INTEGER_LIT i -> i
-    | _ -> failwith "Expected integer literal for ID"
-  in
-  let name =
-    match second with
-    | STR_LIT s -> s
-    | _ -> failwith "Expected string literal for name"
-  in
-  ROW (id, name)
+let rec exec_ast (tbl : table) (ast : Cabs.sql_stmt) : table = 
+  match ast with
+  | Cabs.INSERT_STMT x -> exec_insert tbl x
+  | Cabs.PRINT_STMT -> let _ = execute_select tbl in tbl
+  | ERR_STMT x -> print_endline x; tbl
+
+and exec_insert tbl (ast : Cabs.insert_stmt) : table =
+  match ast with 
+  | WITH_INSERT (x, y) -> exec_lit tbl x y
+  | ERR_INSERT x -> print_endline x; tbl
+
+and exec_lit tbl (f : Cabs.expr) (l : Cabs.expr) : table =
+  match f, l with
+  | EXPR_LIT a, EXPR_LIT b -> 
+    let id = get_int a in
+    let name = get_str b in
+    let row = ROW (id, name) in
+    let updated_tbl = execute_insert tbl row in
+    Printf.printf "Insert(%d, %s).\n" id name;
+    updated_tbl
+  | _, _ -> print_endline "errors with literals"; tbl
+
+and get_str (ast : Cabs.constant) =
+  match ast with
+  | STR_LIT s -> s
+  | _ -> print_endline "can't use this lit, will instead add NULL string"; "NULL"
+ 
+and get_int (ast : Cabs.constant) =
+  match ast with
+  | INTEGER_LIT s -> s
+  | _ -> print_endline "can't use this lit, will instead put 0"; 0
 
 let rec repl (tbl : table) =
   print_string ">>> ";
@@ -30,17 +49,7 @@ let rec repl (tbl : table) =
   | input ->
     let tokens = tokenize input in
     let ast = parse tokens in
-    let new_tbl =
-      match ast with
-      | Cabs.INSERT_STMT (WITH_INSERT (EXPR_LIT a, EXPR_LIT b)) ->
-          let row = make_row a b in
-          let updated_tbl = execute_insert tbl row in
-          Printf.printf "Insert result: %s\n";
-          updated_tbl
-      | Cabs.PRINT_STMT ->
-          let _ = execute_select tbl in
-          tbl
-    in
+    let new_tbl = exec_ast tbl ast in
     repl new_tbl
 
-let () = repl (tbl)
+let () = repl tbl

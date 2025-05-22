@@ -8,6 +8,9 @@ let int_literal_re = Str.regexp "[0-9]+";;
 let float_literal_re = Str.regexp "[0-9]+\\.[0-9]+";;
 let string_literal_re = Str.regexp "\"\\([^\"]*\\)\"";;
 
+
+;;
+
 type token =
   | Keyword of string
   | Identifier of string
@@ -59,16 +62,16 @@ let print_tokens tokens =
 let rec parse = function
     | Keyword("INSERT") :: rest -> Cabs.INSERT_STMT (parse_args rest)
     | [Keyword("PRINT"); Semi ]-> Cabs.PRINT_STMT
-    | _ -> raise (Parse_error "must begin with a keyword!")
+    | _ -> ERR_STMT "must begin with a keyword!"
 
 and parse_args = function
     | [Literal(x); Literal(y); Semi] -> Cabs.WITH_INSERT (parse_lits x, parse_lits y)
     | [Literal(x); Literal(y)] -> raise (Parse_error "forgor semi")
-    | _ -> raise (Parse_error "Incorrect num of args, expect 2")
+    | _ -> ERR_INSERT "Incorrect num of args, expect 2"
 
 and parse_lits = function
     | Int_lit(i) -> Cabs.EXPR_LIT (Cabs.INTEGER_LIT i)
     | Float_lit(f) -> Cabs.EXPR_LIT (Cabs.FLOATER_LIT f)
     | String_lit(s) -> Cabs.EXPR_LIT (Cabs.STR_LIT s)
-    | _ -> raise (Parse_error "What the helly")
+    | _ -> ERR_LIT "What the helly"
   
