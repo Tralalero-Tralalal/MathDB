@@ -19,14 +19,13 @@ let table_max_rows = rows_per_page * table_max_pages
 
 let serialize_row (r : Pages.row) : bytes =
   let buffer = Bytes.create row_size in
-  let (Pages.ROW (id, name)) = r in
-  let id32 = Int32.of_int id in
+  let id32 = Int32.of_int r.id in
   Bytes.set_int32_le buffer 0 id32;
   let write_fixed_string s offset size =
     let padded = Stdlib.String.sub (s ^ Stdlib.String.make size '\000') 0 size in
     Bytes.blit_string padded 0 buffer offset size;
   in
-  write_fixed_string (Regex.char_list_to_string name) id_size name_size;
+  write_fixed_string (Regex.char_list_to_string r.name) id_size name_size;
   buffer
 
 let deserialize_row (b : bytes) : row =
@@ -36,17 +35,20 @@ let deserialize_row (b : bytes) : row =
   in
   let id = Int32.to_int (Bytes.get_int32_le b 0) in
   let name = (Regex.string_to_char_list (read_fixed_string id_size name_size)) in
-  Pages.ROW (id, name) 
+    let r = {
+      id = id;
+      name = name;
+    } in 
+r
 
 let row_slot (tbl : table) (row_num : int) : bytes * int =
-  let (TABLE (num_rows, pages)) = tbl in
   let page_num = row_num / rows_per_page in
   let page =
-    match pages.(page_num) with
+    match tbl.pages.(page_num) with
     | Some p -> p
     | None ->
         let new_page = Bytes.make page_size '\000' in
-        pages.(page_num) <- Some new_page;
+        tbl.pages.(page_num) <- Some new_page;
         new_page
   in
   let row_offset = row_num mod rows_per_page in
@@ -54,26 +56,27 @@ let row_slot (tbl : table) (row_num : int) : bytes * int =
   (page, byte_offset)
 
 let execute_insert (tbl : table) (r : row) =
-  let (TABLE (num_rows, pages)) = tbl in
-  if num_rows >= table_max_rows then begin
+  if tbl.num_rows >= table_max_rows then begin
     raise (Full_error "inflation made me too full"); 
     end
   else
     let serialized = serialize_row r in
     let page, offset =
-      match row_slot tbl num_rows with
+      match row_slot tbl tbl.num_rows with
       | p, o -> (p, o)
     in
     Bytes.blit serialized 0 page offset row_size;
-    let updated_table = TABLE (num_rows + 1, pages) in
+    let updated_table =  {
+      num_rows = tbl.num_rows + 1;
+      pages = tbl.pages
+    } in
     updated_table
 
 
 let execute_select (tbl : table)  =
-  let (TABLE (num_rows, _pages)) = tbl in
-  for i = 0 to num_rows - 1 do
+  for i = 0 to tbl.num_rows - 1 do
     let (page, offset) = row_slot tbl i in
     let row_bytes = Bytes.sub page offset row_size in
-    let Pages.ROW (id, name) = deserialize_row row_bytes in
-    Printf.printf "(%d, %s)\n" id (Regex.char_list_to_string name)
+    let row = deserialize_row row_bytes in
+    Printf.printf "(%d, %s)\n" row.id (Regex.char_list_to_string row.name)
   done;

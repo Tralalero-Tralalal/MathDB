@@ -12,7 +12,10 @@ let tbl : table =
   let pages = Array.make 100 None in
   let prealloc_page = Bytes.make page_size '\000' in
   pages.(1) <- Some prealloc_page;
-  TABLE (0, pages)
+  let return_tbl = {
+  num_rows = 0;
+  pages = pages;
+} in return_tbl
 
 let rec exec_ast (tbl : table) (ast : Cabs.sql_stmt) : table = 
   match ast with
@@ -30,7 +33,10 @@ and exec_lit tbl (f : Cabs.expr) (l : Cabs.expr) : table =
   | EXPR_LIT a, EXPR_LIT b -> 
     let id = get_int a in
     let name = get_str b in
-    let row = ROW (id, name) in
+    let row = {
+      id = id;
+      name = name;
+    } in
     let updated_tbl = execute_insert tbl row in
     Printf.printf "Insert(%d, %s).\n" id (Regex.char_list_to_string name);
     updated_tbl
