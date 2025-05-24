@@ -2,6 +2,7 @@ extraction/*
 !extraction/_tags
 !extraction/MenhirLib
 !extraction/_CoqProject
+mydb.db
 
 _build/
 enter.native

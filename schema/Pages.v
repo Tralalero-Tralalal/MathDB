@@ -3,10 +3,17 @@ From Stdlib Require Import Ascii.
 Require Import Proj.Cabs.
 
 Parameter pages_type : Type.
+Parameter file_descriptor_typ : Type.
+
+Record pager := {
+  file_descriptor : file_descriptor_typ;
+  file_length : Cabs.integer;
+  pages : pages_type
+}.
 
 Record table := {
   num_rows : Cabs.integer;
-  pages : pages_type
+  _pager : pager
 }.
 
 Record row := {
@@ -14,5 +21,5 @@ Record row := {
   name : string
 }.
 
-Extract Constant Pages.pages_type => "Bytes.t option array".
-
+Extract Constant pages_type => "Bytes.t option array".
+Extract Constant file_descriptor_typ => "Unix.file_descr".

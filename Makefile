@@ -7,7 +7,7 @@ SCHEMA_DIR = schema
 # === Tools ===
 COQC = coqc -I . -Q $(EXTRACTED_DIR) Proj  
 COQDEP = coqdep -Q $(EXTRACTED_DIR) Proj 
-OCAMLBUILD = ocamlbuild -use-ocamlfind -pkg zarith -pkg str 
+OCAMLBUILD = ocamlbuild -use-ocamlfind -pkg zarith -pkg str -pkg unix
 
 # === V Files and Targets ===
 VFILES_EXE = $(EXTRACTED_DIR)/Cabs.v $(EXTRACTED_DIR)/Lexer.v $(EXTRACTED_DIR)/Pages.v $(EXTRACTED_DIR)/extraction.v  

@@ -38,19 +38,33 @@ let deserialize_row (b : bytes) : row =
     let r = {
       id = id;
       name = name;
-    } in 
-r
+    } in r
+
+let get_page (pager : Pages.pager) (page_num : int) =
+  if page_num >= table_max_pages then begin
+    raise (Full_error "inflation made me too full"); 
+    end
+    else match pager.pages.(page_num) with
+          | Some page -> page  
+          | None ->
+      (* Cache miss *)
+      let page = Bytes.make page_size '\000' in
+      let num_pages = (pager.file_length + page_size - 1) / page_size in
+      if page_num < num_pages then begin
+        (* Seek and read *)
+        let offset = page_num * page_size in
+        let _ = Unix.lseek pager.file_descriptor offset Unix.SEEK_SET in
+        let bytes_read = Unix.read pager.file_descriptor page 0 page_size in
+        if bytes_read < 0 then failwith "Error reading file"
+      end;
+      (* Cache it *)
+      pager.pages.(page_num) <- Some page;
+      page
+
 
 let row_slot (tbl : table) (row_num : int) : bytes * int =
   let page_num = row_num / rows_per_page in
-  let page =
-    match tbl.pages.(page_num) with
-    | Some p -> p
-    | None ->
-        let new_page = Bytes.make page_size '\000' in
-        tbl.pages.(page_num) <- Some new_page;
-        new_page
-  in
+  let page = get_page tbl._pager page_num in
   let row_offset = row_num mod rows_per_page in
   let byte_offset = row_offset * row_size in
   (page, byte_offset)
@@ -68,7 +82,7 @@ let execute_insert (tbl : table) (r : row) =
     Bytes.blit serialized 0 page offset row_size;
     let updated_table =  {
       num_rows = tbl.num_rows + 1;
-      pages = tbl.pages
+      _pager = tbl._pager
     } in
     updated_table
 

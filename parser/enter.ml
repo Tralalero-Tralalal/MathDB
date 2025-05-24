@@ -3,19 +3,65 @@ open Cabs
 open Schema
 open Pages
 open Regex
+open Unix
 
 let integer_to_int (z : Z.t) : int =
   try Z.to_int z
   with _ -> failwith "Overflow: Z value too large to fit in an OCaml int"
 
-let tbl : table =
-  let pages = Array.make 100 None in
-  let prealloc_page = Bytes.make page_size '\000' in
-  pages.(1) <- Some prealloc_page;
-  let return_tbl = {
-  num_rows = 0;
-  pages = pages;
-} in return_tbl
+let pager_flush (pager : pager) (page_num : int) (size : int) : pager =
+  match pager.pages.(page_num) with
+  | None ->
+      prerr_endline "Tried to flush null page";
+      exit 1
+  | Some page ->
+      let offset = page_num * page_size in
+      let _ = Unix.lseek pager.file_descriptor offset Unix.SEEK_SET in
+      let written = Unix.write pager.file_descriptor page 0 size in
+      if written = -1 then (
+        prerr_endline "Error writing page";
+        exit 1
+      ) else pager
+
+let pager_open (filename : string) : pager =
+  let fd = Unix.openfile filename [Unix.O_RDWR; Unix.O_CREAT] 0o600 in
+  let file_length = Unix.lseek fd 0 Unix.SEEK_END in
+  let pages = Array.make table_max_pages None in
+{ file_descriptor = fd; file_length; pages }
+
+let open_db (filename : string) = 
+  let pager = pager_open filename in 
+    let num_rows = pager.file_length / Schema.row_size in
+          let return_tbl = {
+            num_rows = num_rows;
+            _pager = pager;
+          } in return_tbl
+
+let db_close (table: Pages.table) = 
+  let pager = table._pager in
+    let num_full_pages = table.num_rows / Schema.rows_per_page in 
+      for i = 0 to num_full_pages - 1 do
+        match pager.pages.(i) with
+        | Some page -> pager_flush pager i page_size;
+        pager.pages.(i) <- None
+        | None -> ()
+      done;
+    let num_additional_rows = table.num_rows mod Schema.rows_per_page in
+      if (num_additional_rows > 0) then begin
+        let page_num = num_full_pages in
+        match pager.pages.(page_num) with
+        | Some page -> pager_flush pager page_num (num_additional_rows * Schema.row_size); pager.pages.(page_num) <- None
+        | None -> ()
+      end;
+  (try Unix.close pager.file_descriptor
+    with Unix.Unix_error (_, _, _) ->
+     prerr_endline "Error closing db file";
+     exit 1);
+  Array.iteri (fun i page_opt ->
+    match page_opt with
+    | Some _ -> pager.pages.(i) <- None
+    | None -> ()
+  ) pager.pages
 
 let rec exec_ast (tbl : table) (ast : Cabs.sql_stmt) : table = 
   match ast with
@@ -90,7 +136,7 @@ let rec repl (tbl : table) =
   print_string ">>> ";
   let line = read_line () in
   match line with
-  | "exit" | "quit" -> print_endline "Goodbye!"
+  | "exit" | "quit" -> db_close tbl; print_endline "Goodbye!"
   | input ->
   let words = Stdlib.String.split_on_char ' ' input in
     let tokens = tokenize words in
@@ -99,4 +145,5 @@ let rec repl (tbl : table) =
     let new_tbl = exec_ast tbl ast in
     repl new_tbl
 
-let () = repl tbl
+let () = repl (open_db "mydb.db");
+
