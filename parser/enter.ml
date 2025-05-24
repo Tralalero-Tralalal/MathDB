@@ -66,7 +66,7 @@ let db_close (table: Pages.table) =
 let rec exec_ast (tbl : table) (ast : Cabs.sql_stmt) : table = 
   match ast with
   | Cabs.INSERT_STMT x -> exec_insert tbl x
-  | Cabs.PRINT_STMT -> let _ = execute_select tbl in tbl
+  | Cabs.PRINT_STMT -> let _ = execute_select (cursor_start tbl) in tbl
   | ERR_STMT x -> print_endline (char_list_to_string x); tbl
 
 and exec_insert tbl (ast : Cabs.insert_stmt) : table =
@@ -140,7 +140,6 @@ let rec repl (tbl : table) =
   | input ->
   let words = Stdlib.String.split_on_char ' ' input in
     let tokens = tokenize words in
-    print_tokens tokens;
     let ast = parse tokens in
     let new_tbl = exec_ast tbl ast in
     repl new_tbl

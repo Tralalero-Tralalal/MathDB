@@ -21,5 +21,11 @@ Record row := {
   name : string
 }.
 
+Record cursor := {
+  _table : table;
+  row_num : Cabs.integer;
+  end_of_table : bool
+}.
+
 Extract Constant pages_type => "Bytes.t option array".
 Extract Constant file_descriptor_typ => "Unix.file_descr".

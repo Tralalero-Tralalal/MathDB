@@ -6,4 +6,4 @@ Require Import Proj.Lexer.
 
 Set Extraction Output Directory "./extraction/".
 
-Separate Extraction Cabs.prog Pages.row Pages.table Lexer.parse.
+Separate Extraction Cabs.prog Pages.row Pages.table Pages.pager Pages.cursor Lexer.parse.

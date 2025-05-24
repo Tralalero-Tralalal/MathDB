@@ -17,16 +17,14 @@ let table_max_pages = 100
 let rows_per_page = page_size / row_size
 let table_max_rows = rows_per_page * table_max_pages
 
-let serialize_row (r : Pages.row) : bytes =
-  let buffer = Bytes.create row_size in
+let serialize_row_into (r : row) (buffer : bytes) (offset : int) : unit =
   let id32 = Int32.of_int r.id in
-  Bytes.set_int32_le buffer 0 id32;
-  let write_fixed_string s offset size =
+  Bytes.set_int32_le buffer offset id32;
+  let write_fixed_string s off size =
     let padded = Stdlib.String.sub (s ^ Stdlib.String.make size '\000') 0 size in
-    Bytes.blit_string padded 0 buffer offset size;
+    Bytes.blit_string padded 0 buffer (offset + off) size
   in
-  write_fixed_string (Regex.char_list_to_string r.name) id_size name_size;
-  buffer
+  write_fixed_string (Regex.char_list_to_string r.name) id_size name_size
 
 let deserialize_row (b : bytes) : row =
   let read_fixed_string offset size =
@@ -62,35 +60,58 @@ let get_page (pager : Pages.pager) (page_num : int) =
       page
 
 
-let row_slot (tbl : table) (row_num : int) : bytes * int =
-  let page_num = row_num / rows_per_page in
-  let page = get_page tbl._pager page_num in
-  let row_offset = row_num mod rows_per_page in
+let cursor_end (tbl : table) =
+  {
+    _table = tbl;
+    row_num = tbl.num_rows;
+    end_of_table = true;
+  }
+
+let cursor_start (tbl : table) =
+  {
+    _table = tbl;
+    row_num = 0;
+    end_of_table = (tbl.num_rows = 0);  
+  }
+
+let cursor_value (c : Pages.cursor) : bytes * int =
+  let r = c.row_num in 
+  let page_num = r / rows_per_page in
+  let page = get_page c._table._pager page_num in
+  let row_offset = r mod rows_per_page in
   let byte_offset = row_offset * row_size in
   (page, byte_offset)
 
 let execute_insert (tbl : table) (r : row) =
-  if tbl.num_rows >= table_max_rows then begin
-    raise (Full_error "inflation made me too full"); 
-    end
+  let c = cursor_end tbl in
+  if tbl.num_rows >= table_max_rows then
+    raise (Full_error "inflation made me too full")
   else
-    let serialized = serialize_row r in
     let page, offset =
-      match row_slot tbl tbl.num_rows with
+      match cursor_value c with
       | p, o -> (p, o)
     in
-    Bytes.blit serialized 0 page offset row_size;
-    let updated_table =  {
+    serialize_row_into r page offset;
+    {
       num_rows = tbl.num_rows + 1;
       _pager = tbl._pager
-    } in
-    updated_table
+    }
 
+let cursor_advance (c : cursor) =
+  let inc_row_num = c.row_num + 1 in
+  let eot = inc_row_num >= c._table.num_rows in
+  {
+    _table = c._table;
+    row_num = inc_row_num;
+    end_of_table = eot;
+  }
 
-let execute_select (tbl : table)  =
-  for i = 0 to tbl.num_rows - 1 do
-    let (page, offset) = row_slot tbl i in
+let rec execute_select (c : cursor) =
+  if c.end_of_table == false then begin 
+    let (page, offset) = cursor_value c in
     let row_bytes = Bytes.sub page offset row_size in
     let row = deserialize_row row_bytes in
-    Printf.printf "(%d, %s)\n" row.id (Regex.char_list_to_string row.name)
-  done;
+    Printf.printf "(%d, %s)\n" row.id (Regex.char_list_to_string row.name);
+    execute_select (cursor_advance c);
+    end;
+
