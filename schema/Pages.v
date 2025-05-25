@@ -4,13 +4,16 @@ Require Import Proj.Cabs.
 
 Parameter pages_type : Type.
 
+Definition byte := ascii.
+Definition bytes := list ascii.
+
 Record table := {
-  num_rows : ascii;
+  num_rows : ascii; (*int8*)
   pages : pages_type
 }.
 
 Record row := {
-  id : ascii;
+  id : ascii; (*int8*)
   name : string
 }.
 

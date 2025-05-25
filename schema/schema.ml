@@ -2,15 +2,14 @@ exception Full_error of string
 
 open Pages
 
-let id_size = 4 
-let name_size = 32
-let email_size = 255
+let id_size = 1 
+let name_size = 32 (*String can be 32 ascii chars long*)
 
 let id_offset = 0
 let username_offset = id_offset + id_size
 let email_offset = username_offset + name_size
 
-let row_size = id_size + name_size + email_size
+let row_size = id_size + name_size
 
 let page_size =  4096
 let table_max_pages = 100
@@ -33,7 +32,7 @@ let deserialize_row (b : bytes) : row =
     let raw = Bytes.sub_string b offset size in
     try Stdlib.String.sub raw 0 (Stdlib.String.index raw '\000') with Not_found -> raw
   in
-  let id = Int32.to_int (Bytes.get_int32_le b 0) in
+  let id = Bytes.get_int8 b 0 in
   let name = (Regex.string_to_char_list (read_fixed_string id_size name_size)) in
     let r = {
       id = Char.chr id;
