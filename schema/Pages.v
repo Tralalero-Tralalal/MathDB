@@ -5,12 +5,12 @@ Require Import Proj.Cabs.
 Parameter pages_type : Type.
 
 Record table := {
-  num_rows : Cabs.integer;
+  num_rows : ascii;
   pages : pages_type
 }.
 
 Record row := {
-  id : Cabs.integer;
+  id : ascii;
   name : string
 }.
 

@@ -22,7 +22,7 @@ Inductive tokens :=
   | Literal : literal -> tokens
 
 with literal :=
-  | Int_lit : Cabs.integer -> literal
+  | Int_lit : ascii -> literal
   | Float_lit : Cabs.floater -> literal
   | String_lit : string -> literal.
 
@@ -31,16 +31,6 @@ Definition make_uppercase (s : string) : string :=
 
 Definition is_keyword (s : string) : bool :=
   existsb (String.eqb (make_uppercase s)) ["INSERT"; "PRINT"].
-
-(*Definition tokenize (words : list string) : list tokens :=
-  map (fun word =>
-    if String.eqb word "*" then Star
-    else if String.eqb word "," then Comma
-    else if String.eqb word ";" then Semi
-    else if is_keyword word then Keyword (make_uppercase word)
-    else Identifier word 
-  ) words.
- *)
 
 Definition parse_lits (t : literal) : Cabs.expr  :=
   match t with

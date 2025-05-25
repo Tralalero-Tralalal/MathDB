@@ -19,8 +19,8 @@ let table_max_rows = rows_per_page * table_max_pages
 
 let serialize_row (r : Pages.row) : bytes =
   let buffer = Bytes.create row_size in
-  let id32 = Int32.of_int r.id in
-  Bytes.set_int32_le buffer 0 id32;
+  let id = Char.code r.id in
+  Bytes.set_int8 buffer 0 id;
   let write_fixed_string s offset size =
     let padded = Stdlib.String.sub (s ^ Stdlib.String.make size '\000') 0 size in
     Bytes.blit_string padded 0 buffer offset size;
@@ -36,7 +36,7 @@ let deserialize_row (b : bytes) : row =
   let id = Int32.to_int (Bytes.get_int32_le b 0) in
   let name = (Regex.string_to_char_list (read_fixed_string id_size name_size)) in
     let r = {
-      id = id;
+      id = Char.chr id;
       name = name;
     } in 
 r
@@ -56,27 +56,27 @@ let row_slot (tbl : table) (row_num : int) : bytes * int =
   (page, byte_offset)
 
 let execute_insert (tbl : table) (r : row) =
-  if tbl.num_rows >= table_max_rows then begin
+  if Char.code tbl.num_rows >= table_max_rows then begin
     raise (Full_error "inflation made me too full"); 
     end
   else
     let serialized = serialize_row r in
     let page, offset =
-      match row_slot tbl tbl.num_rows with
+      match row_slot tbl (Char.code tbl.num_rows) with
       | p, o -> (p, o)
     in
     Bytes.blit serialized 0 page offset row_size;
     let updated_table =  {
-      num_rows = tbl.num_rows + 1;
+      num_rows = Char.chr ((Char.code tbl.num_rows) + 1);
       pages = tbl.pages
     } in
     updated_table
 
 
 let execute_select (tbl : table)  =
-  for i = 0 to tbl.num_rows - 1 do
+  for i = 0 to (Char.code tbl.num_rows) - 1 do
     let (page, offset) = row_slot tbl i in
     let row_bytes = Bytes.sub page offset row_size in
     let row = deserialize_row row_bytes in
-    Printf.printf "(%d, %s)\n" row.id (Regex.char_list_to_string row.name)
+    Printf.printf "(%d, %s)\n" (Char.code row.id) (Regex.char_list_to_string row.name)
   done;

@@ -26,7 +26,7 @@ with expr :=
 
 with constant :=
   | STR_LIT : string -> constant
-  | INTEGER_LIT : integer -> constant
+  | INTEGER_LIT : ascii -> constant
   | FLOATER_LIT : floater -> constant
   | ERR_CONST : string -> constant
 

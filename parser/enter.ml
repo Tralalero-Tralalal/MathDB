@@ -4,16 +4,12 @@ open Schema
 open Pages
 open Regex
 
-let integer_to_int (z : Z.t) : int =
-  try Z.to_int z
-  with _ -> failwith "Overflow: Z value too large to fit in an OCaml int"
-
 let tbl : table =
   let pages = Array.make 100 None in
   let prealloc_page = Bytes.make page_size '\000' in
   pages.(1) <- Some prealloc_page;
   let return_tbl = {
-  num_rows = 0;
+  num_rows = '\x00';
   pages = pages;
 } in return_tbl
 
@@ -38,7 +34,7 @@ and exec_lit tbl (f : Cabs.expr) (l : Cabs.expr) : table =
       name = name;
     } in
     let updated_tbl = execute_insert tbl row in
-    Printf.printf "Insert(%d, %s).\n" id (Regex.char_list_to_string name);
+    Printf.printf "Insert(%d, %s).\n" (Char.code id) (Regex.char_list_to_string name);
     updated_tbl
   | _, _ -> print_endline "errors with literals"; tbl
 
@@ -50,7 +46,7 @@ and get_str (ast : Cabs.constant) =
 and get_int (ast : Cabs.constant) =
   match ast with
   | INTEGER_LIT s ->  s
-  | _ -> print_endline "can't use this lit, will instead put 0"; 0
+  | _ -> print_endline "can't use this lit, will instead put 0"; '\x00'
 
 let is_keyword s = List.mem s ["INSERT"; "PRINT"]
 
@@ -61,10 +57,8 @@ let rec tokenize (s : string list) : tokens list =
     | "," -> Comma
     | ";" -> Semi
     | w when is_keyword (Stdlib.String.uppercase_ascii w) -> Keyword (string_to_char_list (Stdlib.String.uppercase_ascii w))
-    | w when Str.string_match float_lit_re w 0 ->
-        Literal (Float_lit (float_of_string w))
     | w when Str.string_match int_lit_re w 0 ->
-        Literal (Int_lit (int_of_string w))
+        Literal (Int_lit (Char.chr (int_of_string w)))
     | w when Str.string_match string_lit_re w 0 ->
         let str_val = Str.matched_group 1 w in
         Literal (String_lit (string_to_char_list str_val))
@@ -77,7 +71,7 @@ let string_of_token = function
   | Star              -> "Star(*)"
   | Comma             -> "Comma(,)"
   | Semi              -> "SEMI"
-  | Literal (Int_lit i)      -> Printf.sprintf "IntLiteral(%d)" i
+  | Literal (Int_lit i)      -> Printf.sprintf "IntLiteral(%d)" (Char.code i)
   | Literal (Float_lit f)    -> Printf.sprintf "FloatLiteral(%f)" f
   | Literal (String_lit str) -> Printf.sprintf "StringLiteral(\"%s\")" (char_list_to_string str)
 
@@ -94,7 +88,6 @@ let rec repl (tbl : table) =
   | input ->
   let words = Stdlib.String.split_on_char ' ' input in
     let tokens = tokenize words in
-    print_tokens tokens;
     let ast = parse tokens in
     let new_tbl = exec_ast tbl ast in
     repl new_tbl
