@@ -4,5 +4,4 @@ This is a mathematically proven clone of SQLite. It is not designed to be produc
 ## 🛠 How to Build
 
 ```sh
-make              # Compile the project
-make clean        # Clean build artifacts
+gcc main.c schema.c -o program              # Compile the project
