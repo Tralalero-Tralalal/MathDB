@@ -4,6 +4,19 @@ open Schema
 open Pages
 open Regex
 
+let print_table (tbl : table) =
+  Printf.printf "num_rows: %d\n" (Char.code tbl.num_rows);
+  Array.iteri
+    (fun i opt_page ->
+       Printf.printf "Page %d: " i;
+       match opt_page with
+       | Some bytes ->
+           Bytes.iter print_char bytes;
+           print_newline ()
+       | None ->
+           print_endline "<empty>")
+    tbl.pages
+
 let tbl : table =
   let pages = Array.make 100 None in
   let prealloc_page = Bytes.make page_size '\000' in
@@ -35,6 +48,7 @@ and exec_lit tbl (f : Cabs.expr) (l : Cabs.expr) : table =
     } in
     let updated_tbl = execute_insert tbl row in
     Printf.printf "Insert(%d, %s).\n" (Char.code id) (Regex.char_list_to_string name);
+    print_table updated_tbl;
     updated_tbl
   | _, _ -> print_endline "errors with literals"; tbl
 
