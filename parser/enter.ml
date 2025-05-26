@@ -4,26 +4,26 @@ open Schema
 open Pages
 open Regex
 
+
 let print_table (tbl : table) =
   Printf.printf "num_rows: %d\n" (Char.code tbl.num_rows);
-  Array.iteri
+  List.iteri
     (fun i opt_page ->
        Printf.printf "Page %d: " i;
        match opt_page with
-       | Some bytes ->
-           Bytes.iter print_char bytes;
-           print_newline ()
+       | Some chars ->
+           print_char_list chars
        | None ->
            print_endline "<empty>")
     tbl.pages
 
-let tbl : table =
-  let pages = Array.make 100 None in
-  let prealloc_page = Bytes.make page_size '\000' in
-  pages.(1) <- Some prealloc_page;
+let new_tbl : table =
+  let pages = List.init 100 (fun _ -> None) in
+  let prealloc_page = List.init 4096 (fun _ -> '\000') in
+  let new_pages = update_nth pages 1 (Some prealloc_page) in
   let return_tbl = {
   num_rows = '\x00';
-  pages = pages;
+  pages = new_pages;
 } in return_tbl
 
 let rec exec_ast (tbl : table) (ast : Cabs.sql_stmt) : table = 
@@ -106,4 +106,4 @@ let rec repl (tbl : table) =
     let new_tbl = exec_ast tbl ast in
     repl new_tbl
 
-let () = repl tbl
+let () = repl new_tbl

@@ -1,9 +1,9 @@
 From Stdlib Require Import String.
 From Stdlib Require Import Ascii.
 From Stdlib Require Import List.
-
-Definition id_size := 1.
-Definition name_size := 32. (*Cans be 32 ascii*)
+From Stdlib Require Import Arith.
+From Stdlib Require Import NArith.
+From Stdlib Require Import ZArith.
 
 Parameter pages_type : Type.
 
@@ -12,7 +12,7 @@ Definition bytes := list ascii.
 
 Record table := {
   num_rows : ascii; (*int8*)
-  pages : pages_type
+  pages : list (option (list ascii)) 
 }.
 
 Record row := {
@@ -40,3 +40,17 @@ Qed.
 Require Import ExtrOcamlBasic.
 Require Import ExtrOcamlString.
 Extract Constant pages_type => "Bytes.t option array".
+Extract Inductive positive => int
+[ "(fun p-> let two = Int.add Int.one Int.one in
+    Int.add Int.one (Int.mul two p))"
+  "(fun p->
+    let two = Int.add Int.one Int.one in Int.mul two p)" "Int.one" ]
+  "(fun f2p1 f2p f1 p -> let two = Int.add Int.one Int.one in
+    if p <= Int.one then f1 () else if Int.rem p two = Int.zero then
+    f2p (Int.div p two) else f2p1 (Int.div p two))".
+
+Extract Inductive N => int [ "Int.zero" "" ]
+"(fun f0 fp n -> if n=Int.zero then f0 () else fp n)".
+
+Extract Inductive Z => int [ "0" "" "(~-)" ]
+"(fun f0 fp fn z -> if z=0 then f0 () else if z>0 then fp z else fn (-z))".
