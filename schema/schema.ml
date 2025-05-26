@@ -7,7 +7,6 @@ let name_size = 32 (*String can be 32 ascii chars long*)
 
 let id_offset = 0
 let username_offset = id_offset + id_size
-let email_offset = username_offset + name_size
 
 let row_size = id_size + name_size
 
@@ -16,29 +15,25 @@ let table_max_pages = 100
 let rows_per_page = page_size / row_size
 let table_max_rows = rows_per_page * table_max_pages
 
-let serialize_row (r : Pages.row) : bytes =
-  let buffer = Bytes.create row_size in
-  let id = Char.code r.id in
-  Bytes.set_int8 buffer 0 id;
-  let write_fixed_string s offset size =
-    let padded = Stdlib.String.sub (s ^ Stdlib.String.make size '\000') 0 size in
-    Bytes.blit_string padded 0 buffer offset size;
+let char_list_to_bytes (clist : char list) (byte_size : int) : bytes =
+  let b = Bytes.make byte_size '\000' in  (* Initialize with null bytes *)
+  let rec fill i = function
+    | [] -> ()
+    | c :: cs when i < byte_size ->
+        Bytes.set b i c;
+        fill (i + 1) cs
+    | _ -> ()  
   in
-  write_fixed_string (Regex.char_list_to_string r.name) id_size name_size;
-  buffer
+  fill 0 clist;
+  b
 
-let deserialize_row (b : bytes) : row =
-  let read_fixed_string offset size =
-    let raw = Bytes.sub_string b offset size in
-    try Stdlib.String.sub raw 0 (Stdlib.String.index raw '\000') with Not_found -> raw
+let bytes_to_char_list (b : Bytes.t) : char list =
+  let len = Bytes.length b in
+  let rec aux i acc =
+    if i < 0 then acc
+    else aux (i - 1) (Bytes.get b i :: acc)
   in
-  let id = Bytes.get_int8 b 0 in
-  let name = (Regex.string_to_char_list (read_fixed_string id_size name_size)) in
-    let r = {
-      id = Char.chr id;
-      name = name;
-    } in 
-r
+  aux (len - 1) []
 
 let row_slot (tbl : table) (row_num : int) : bytes * int =
   let page_num = row_num / rows_per_page in
@@ -59,11 +54,15 @@ let execute_insert (tbl : table) (r : row) =
     raise (Full_error "inflation made me too full"); 
     end
   else
-    let serialized = serialize_row r in
+    let serialized = char_list_to_bytes (serialize_row r) 33 in
     let page, offset =
       match row_slot tbl (Char.code tbl.num_rows) with
       | p, o -> (p, o)
     in
+Printf.printf "Serialized length: %d\n" (Bytes.length serialized);
+Printf.printf "Page length: %d, Offset: %d, Row size: %d\n" (Bytes.length page) offset row_size;
+  assert (Bytes.length page >= offset + row_size);
+  assert (Bytes.length serialized >= row_size);
     Bytes.blit serialized 0 page offset row_size;
     let updated_table =  {
       num_rows = Char.chr ((Char.code tbl.num_rows) + 1);
@@ -75,7 +74,7 @@ let execute_insert (tbl : table) (r : row) =
 let execute_select (tbl : table)  =
   for i = 0 to (Char.code tbl.num_rows) - 1 do
     let (page, offset) = row_slot tbl i in
-    let row_bytes = Bytes.sub page offset row_size in
+    let row_bytes = bytes_to_char_list (Bytes.sub page offset row_size) in
     let row = deserialize_row row_bytes in
     Printf.printf "(%d, %s)\n" (Char.code row.id) (Regex.char_list_to_string row.name)
   done;
