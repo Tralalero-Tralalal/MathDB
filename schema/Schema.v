@@ -111,7 +111,7 @@ Fixpoint list_sub {A} (lst : list A) (offset len : nat) : list A :=
 Definition new_tbl :=
   let emp_pages := make_list_of 100 None in 
   let pre_alloc_page := make_list_of 4069 zero in 
-  let new_pages := update_nth emp_pages 1 (Some pre_alloc_page) in
+  let new_pages := update_nth emp_pages 0 (Some pre_alloc_page) in
 {| num_rows := zero; pages :=  new_pages|}.
 
 (*Finds the place in memory to do an operation*)
