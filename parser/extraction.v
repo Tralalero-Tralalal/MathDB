@@ -6,4 +6,5 @@ Require Import Proj.Lexer.
 
 Set Extraction Output Directory "./extraction/".
 
-Separate Extraction Cabs.prog Pages.row Pages.table Lexer.parse Pages.serialize_row Pages.deserialize_row.
+Separate Extraction Cabs.prog Pages.row Pages.table Lexer.parse Pages.serialize_row Pages.deserialize_row Pages.execute_select Pages.execute_insert
+Pages.new_tbl.

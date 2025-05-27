@@ -1,13 +1,23 @@
 open Lexer
 open Cabs
-open Schema
 open Pages
 open Regex
 
+exception Full_error of string
+
+
+let print_char_list clist =
+  clist |> Stdlib.List.iter (fun c -> print_char c);
+  print_newline ()
+
+
+(*This prints all rows*)
+let print_row_list (rows : row list)  =
+  Stdlib.List.iter (fun row -> Printf.printf "(%d, %s)\n" (Char.code row.id) (Regex.char_list_to_string row.name)) rows
 
 let print_table (tbl : table) =
   Printf.printf "num_rows: %d\n" (Char.code tbl.num_rows);
-  List.iteri
+  Stdlib.List.iteri
     (fun i opt_page ->
        Printf.printf "Page %d: " i;
        match opt_page with
@@ -17,19 +27,10 @@ let print_table (tbl : table) =
            print_endline "<empty>")
     tbl.pages
 
-let new_tbl : table =
-  let pages = List.init 100 (fun _ -> None) in
-  let prealloc_page = List.init 4096 (fun _ -> '\000') in
-  let new_pages = update_nth pages 1 (Some prealloc_page) in
-  let return_tbl = {
-  num_rows = '\x00';
-  pages = new_pages;
-} in return_tbl
-
 let rec exec_ast (tbl : table) (ast : Cabs.sql_stmt) : table = 
   match ast with
   | Cabs.INSERT_STMT x -> exec_insert tbl x
-  | Cabs.PRINT_STMT -> let _ = execute_select tbl in tbl
+  | Cabs.PRINT_STMT -> let rows = execute_select tbl in print_row_list rows; tbl
   | ERR_STMT x -> print_endline (char_list_to_string x); tbl
 
 and exec_insert tbl (ast : Cabs.insert_stmt) : table =
@@ -46,7 +47,9 @@ and exec_lit tbl (f : Cabs.expr) (l : Cabs.expr) : table =
       id = id;
       name = name;
     } in
-    let updated_tbl = execute_insert tbl row in
+    let updated_tbl = match execute_insert tbl row with
+                      | Some x -> x
+                      | None -> raise (Full_error "too full") in
     Printf.printf "Insert(%d, %s).\n" (Char.code id) (Regex.char_list_to_string name);
     print_table updated_tbl;
     updated_tbl
@@ -62,7 +65,7 @@ and get_int (ast : Cabs.constant) =
   | INTEGER_LIT s ->  s
   | _ -> print_endline "can't use this lit, will instead put 0"; '\x00'
 
-let is_keyword s = List.mem s ["INSERT"; "PRINT"]
+let is_keyword s = Stdlib.List.mem s ["INSERT"; "PRINT"]
 
 let rec tokenize (s : string list) : tokens list =
   Stdlib.List.map (fun word ->
