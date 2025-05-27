@@ -41,6 +41,35 @@ let print_char_list clist =
 let update_nth lst (idx : int) (new_val : char list option) =
    List.mapi (fun i x -> if i = idx then new_val else x) lst
 
+let make_list (lst : char list) (len : int) : char list =
+  let padding_len = len - Stdlib.List.length lst in
+  let padding = List.init (max 0 padding_len) (fun _ -> '\000') in
+  lst @ padding
+
+(* Replace [src] into [dst] at position [offset] *)
+let rec list_blit dst src offset =
+  let rec aux i dst =
+    match dst with
+    | [] -> []
+    | hd :: tl ->
+        if i >= offset && i < offset + List.length src then
+          List.nth src (i - offset) :: aux (i + 1) tl
+        else
+          hd :: aux (i + 1) tl
+  in
+  aux 0 dst
+
+
+let rec list_sub lst offset len =
+  match lst, offset with
+  | _, 0 ->
+      (match lst, len with
+       | _, 0 -> []
+       | [], _ -> []
+       | hd :: tl, _ -> hd :: list_sub tl 0 (len - 1))
+  | [], _ -> []
+  | _ :: tl, n -> list_sub tl (n - 1) len
+
 (*Finds the place in memory to do an operation*)
 let row_slot (tbl : table) (row_num : int) : table * char list * int =
   (*Finds which page it should be at*)
@@ -76,14 +105,13 @@ let execute_insert (tbl : table) (r : row) =
         raise (Full_error "inflation made me too full"); 
       end
         else
-          let serialized = char_list_to_bytes (serialize_row r) 33 in (*serialize the inputted row into bytes*)
+          let serialized = make_list (serialize_row r) row_size in (*serialize the inputted row into a list of ascii that has a preallocated size*)
             let table, page, offset =
               match row_slot tbl num_of_rows with (*Find the page to put it in, if there is none make a new one*)
                 | t, p, o -> (t, p, o) in
-                let bytes_page = char_list_to_bytes page (Stdlib.List.length page) in (*turn page into bytes*)
-                  Bytes.blit serialized 0 bytes_page offset row_size; (*add serliazed data to page, in bytes*)
+                  let x = list_blit page serialized offset in 
                     (*The new page then replaces the current page, which makes a new list called new_pages*)
-                    let new_pages = update_nth table.pages page_num (Some (bytes_to_char_list bytes_page)) in
+                    let new_pages = update_nth table.pages page_num (Some x) in
                     (*The updated table is returned*)
                       let updated_table =  {
                         num_rows = Char.chr (num_of_rows + 1);
@@ -94,9 +122,7 @@ let execute_insert (tbl : table) (r : row) =
 let execute_select (tbl : table)  =
   for i = 0 to (Char.code tbl.num_rows) - 1 do (*Iterates over all rows*)
     let (_, page, offset) = row_slot tbl i in (*grabs row of index i in the tbl*)
-      let bytes_page = char_list_to_bytes page (Stdlib.List.length page) in (*turns page into bytes*)
-        (*returns a row from the page starting from offset and encompassing row size*)
-        let row_bytes = bytes_to_char_list (Bytes.sub bytes_page offset row_size) in 
+        let row_bytes = list_sub page offset row_size in 
           let row = deserialize_row row_bytes in
             Printf.printf "(%d, %s)\n" (Char.code row.id) (Regex.char_list_to_string row.name)
   done;
