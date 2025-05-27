@@ -1,10 +1,10 @@
 Require Import ExtrOcamlBasic.
 Require Import ExtrOcamlString.
-Require Import Proj.Pages.
+Require Import Proj.Schema.
 Require Import Proj.Cabs.
 Require Import Proj.Lexer.
 
 Set Extraction Output Directory "./extraction/".
 
-Separate Extraction Cabs.prog Pages.row Pages.table Lexer.parse Pages.serialize_row Pages.deserialize_row Pages.execute_select Pages.execute_insert
-Pages.new_tbl.
+Separate Extraction Cabs.prog Schema.row Schema.table Lexer.parse Schema.serialize_row Schema.deserialize_row Schema.execute_select Schema.execute_insert
+Schema.new_tbl.

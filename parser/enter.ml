@@ -1,6 +1,6 @@
 open Lexer
 open Cabs
-open Pages
+open Schema
 open Regex
 
 exception Full_error of string
