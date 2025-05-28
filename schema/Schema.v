@@ -5,7 +5,8 @@ From Stdlib Require Import Arith.
 From Stdlib Require Import NArith.
 From Stdlib Require Import ZArith.
 Import List.ListNotations.
-Require Import Proj.Helpers.
+
+Require Import Schema.Helpers.
 
 Definition byte := ascii.
 Definition _bytes := list ascii.
