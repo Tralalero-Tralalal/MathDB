@@ -1,6 +1,8 @@
 extraction/*
 !extraction/enter.ml
 !extraction/regex.ml
+!extraction/persistence.ml
+!extraction/get_page.ml
 
 _build/
 enter.native
@@ -11,3 +13,5 @@ enter.native
 .*.aux
 *.d
 *.glob
+
+mydb.db

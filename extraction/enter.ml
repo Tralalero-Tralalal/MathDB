@@ -2,14 +2,14 @@ open Lexer
 open Cabs
 open Schema
 open Regex
-
-exception Full_error of string
-
+open Unix
+open Helpers
+open Persistence
+open Records
 
 let print_char_list clist =
   clist |> Stdlib.List.iter (fun c -> print_char c);
   print_newline ()
-
 
 (*This prints all rows*)
 let print_row_list (rows : row list)  =
@@ -25,7 +25,7 @@ let print_table (tbl : table) =
            print_char_list chars
        | None ->
            print_endline "<empty>")
-    tbl.pages
+    tbl._pager.pages
 
 let rec exec_ast (tbl : table) (ast : Cabs.sql_stmt) : table = 
   match ast with
@@ -101,7 +101,7 @@ let rec repl (tbl : table) =
   print_string ">>> ";
   let line = read_line () in
   match line with
-  | "exit" | "quit" -> print_endline "Goodbye!"
+  | "exit" | "quit" -> db_close tbl; print_endline "Goodbye!"
   | input ->
   let words = Stdlib.String.split_on_char ' ' input in
     let tokens = tokenize words in
@@ -109,4 +109,4 @@ let rec repl (tbl : table) =
     let new_tbl = exec_ast tbl ast in
     repl new_tbl
 
-let () = repl new_tbl
+let () = repl (open_db "mydb.db");

@@ -4,6 +4,7 @@ From Stdlib Require Import List.
 From Stdlib Require Import Arith.
 From Stdlib Require Import NArith.
 From Stdlib Require Import ZArith.
+From Stdlib Require Import ExtrOcamlIntConv.
 Import List.ListNotations.
 
 Definition get_third {A : Type} {B : Type} {C : Type} (t : A * B * C) : C :=
@@ -36,8 +37,8 @@ Fixpoint mapi_aux {A B : Type} (i : nat) (l : list A) (f : nat -> A -> B) : list
 Definition mapi {A B : Type} (l : list A) (f : nat -> A -> B) : list B :=
   mapi_aux 0 l f.
 
-Definition update_nth {A : Type} (lst : list A) (idx : nat) (new_val : A) : list A :=
-  mapi lst (fun n x => if Nat.eqb n idx then new_val else x).
+Definition update_nth {A : Type} (lst : list A) (idx : int) (new_val : A) : list A :=
+  mapi lst (fun n x => if Nat.eqb n (nat_of_int idx) then new_val else x).
 
 Fixpoint add_n_elems_to_list {A : Type} (n : nat) (a : A) (ls : list A) : list A :=
   match n with

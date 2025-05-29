@@ -7,5 +7,6 @@ parser/Lexer.v
 
 schema/Helpers.v
 schema/Schema.v
+schema/Records.v
 
 extraction.v

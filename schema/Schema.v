@@ -4,38 +4,40 @@ From Stdlib Require Import List.
 From Stdlib Require Import Arith.
 From Stdlib Require Import NArith.
 From Stdlib Require Import ZArith.
+From Stdlib Require Import ExtrOcamlIntConv.
+
+From SimpleIO Require Import SimpleIO.
+From SimpleIO Require Import IO_Unix.
+
 Import List.ListNotations.
 
-Require Import Schema.Helpers.
+From Schema Require Import Helpers.
+From Schema Require Import Records.
 
 Definition byte := ascii.
 Definition _bytes := list ascii.
 
 Definition page := _bytes.
-Definition pages_type := list (option page).
 
 Definition id_size := 1.
+
 Definition name_size := 32. (* String can be 32 ascii asciis long *)
 
 Definition id_offset := 0.
-Definition username_offset := id_offset + id_size.
+
+Definition name_offset := id_offset + id_size.
 
 Definition row_size := id_size + name_size.
 
 Definition page_size := 4096.
+
 Definition table_max_pages := 100.
+
 Definition rows_per_page := page_size / row_size.
+
 Definition table_max_rows := rows_per_page * table_max_pages.
 
-Record table := {
-  num_rows : ascii; (*int8*)
-  pages : pages_type
-}.
-
-Record row := {
-  id : ascii; (*int8*)
-  name : string
-}.
+Parameter _get_page : pager -> int -> pager * page.
 
 Definition deserialize_row (b : list ascii) : row :=
   match b with
@@ -54,38 +56,18 @@ induction s. exfalso. apply H. reflexivity. unfold serialize_row. simpl. rewrite
 reflexivity.
 Qed.
 
+Definition get_page := _get_page.
 
 (*Finds the place in memory to do an operation*)
-Definition row_slot (tbl : table) (row_num : nat) : table * page * nat :=
+Definition row_slot (tbl : table) (row_num : nat) : pager * page * nat :=
   (*Finds which page it should be at*)
   let page_num := row_num / rows_per_page in
-  (*It finds element in pages at index page num*)
-  let page_option := nth_default None tbl.(pages) page_num in
-  match page_option with
-  | Some p => (*If there is some page, it returns it*)
-    (*How many rows is the row I'm looking for offset by?*)
-    let row_offset := row_num mod rows_per_page in
-    (*How many bytes is the byte I'm looking for offset by?*)
-    let byte_offset := row_offset * row_size in (tbl, p, byte_offset)
-  | None => (*IF there is no page, it creates one with arbitrary bytes*)
-    let new_page := repeat Ascii.zero page_size in
     (*How many rows is the row I'm looking for offset by?*)
     let row_offset := row_num mod rows_per_page in
     (*How many bytes is the byte I'm looking for offset by?*)
     let byte_offset := row_offset * row_size in
-    (*Adds this to the pages to make new pages*)
-    let new_pages := update_nth tbl.(pages) page_num (Some new_page) in
-    (*Makes a new table with the pages and returns it along with page*)
-    let new_table := {| num_rows := (tbl.(num_rows)); pages := new_pages |} in
-    (new_table, new_page, byte_offset)
-  end.
-
-Definition new_tbl :=
-  let emp_pages := make_list_of 100 None in 
-  let pre_alloc_page := make_list_of 4069 zero in 
-  let new_pages := update_nth emp_pages 0 (Some pre_alloc_page) in
-{| num_rows := zero; pages :=  new_pages|}.
-
+    let pager_and_page := get_page (_pager tbl) (int_of_nat page_num) in
+    (fst pager_and_page, snd pager_and_page, byte_offset).
 
 (* Definition for the Full_error exception (using option type to simulate) *)
 Definition Full_error (msg : string) : option table := None.
@@ -98,15 +80,18 @@ Definition execute_insert (tbl : table) (r : row) : option table :=
   else
     let serialized := make_list (serialize_row r) row_size in (*serialize the inputted row into a list of ascii that has a preallocated size*)
     let full := row_slot tbl num_of_rows in (*Find the page to put it in, if there is none make a new one*) 
-    let current_table := get_first full in 
+    let current_pager := get_first full in 
     let page := get_second full in 
     let offset := get_third full in 
     let updated_page := list_blit page serialized offset in
  (*The new page then replaces the current page, which makes a new list called new_pages*)
     let page_num := num_of_rows / rows_per_page in
-    let new_pages := update_nth current_table.(pages) page_num (Some updated_page) in
+    let new_pages := update_nth (pages current_pager) (int_of_nat page_num) (Some updated_page) in
     (*The updated table is returned*)
-    let updated_table := {| num_rows := Ascii.ascii_of_nat (Nat.succ num_of_rows); pages := new_pages |} in
+    let updated_pager := {| file_descriptor := (file_descriptor current_pager); 
+      file_length := (file_length current_pager); pages := new_pages|} in 
+    let updated_table := 
+      {| num_rows := Ascii.ascii_of_nat (Nat.succ num_of_rows); _pager := updated_pager |} in
     Some updated_table.
 
 (*This prints all rows*)
@@ -122,3 +107,5 @@ Fixpoint get_rows (tbl : table) (ls : list row) (i : nat) : list row :=
 
 Definition execute_select (tbl : table) :=
   get_rows tbl [] (Ascii.nat_of_ascii (num_rows tbl)).
+
+
