@@ -963,3 +963,8 @@ debug:
 # Local Variables:
 # mode: makefile-gmake
 # End:
+
+.PHONY: exec
+
+exec:
+	cd extraction/ && ocamlbuild -use-ocamlfind -pkg zarith -pkg str -pkg unix enter.native && mv enter.native ../

@@ -1,3 +1,7 @@
+extraction/*
+!extraction/enter.ml
+!extraction/regex.ml
+
 _build/
 enter.native
 

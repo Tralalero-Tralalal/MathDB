@@ -1,9 +1,9 @@
 Require Import ExtrOcamlBasic.
 Require Import ExtrOcamlString.
-Require Import Proj.Schema.
-Require Import Proj.Cabs.
-Require Import Proj.Lexer.
-Require Import Proj.Helpers.
+Require Import Schema.Schema.
+Require Import Schema.Helpers.
+Require Import Parser.Cabs.
+Require Import Parser.Lexer.
 
 
 Set Extraction Output Directory "./extraction/".
