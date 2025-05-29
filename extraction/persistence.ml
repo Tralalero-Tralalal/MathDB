@@ -37,9 +37,9 @@ let pager_open (file_name : string) : pager =
 let db_open (file_name : string) : table =
   let pager = pager_open file_name in 
     let num_rows = pager.file_length / _row_size in
-    { num_rows = (Char.chr num_rows); _pager = pager }
+    { num_rows = num_rows; _pager = pager }
 
-let pager_flush (pager : pager) (page_num : int) (size : int) : pager =
+let pager_flush (pager : pager) (page_num : int) (size : int) =
   match Stdlib.List.nth pager.pages page_num with
   | None ->
       prerr_endline "Tried to flush null page";
@@ -51,13 +51,13 @@ let pager_flush (pager : pager) (page_num : int) (size : int) : pager =
       if written = -1 then (
         prerr_endline "Error writing page";
         exit 1
-      ) else pager
+      ) else ()
 
 let open_db (filename : string) = 
   let pager = pager_open filename in 
     let num_rows = pager.file_length / _row_size in
           let return_tbl = {
-            num_rows = (Char.chr num_rows);
+            num_rows = num_rows;
             _pager = pager;
           } in return_tbl
 
@@ -65,14 +65,14 @@ let open_db (filename : string) =
 let db_close (table: table) = 
   let pager = table._pager in
   let pages = Stdlib.Array.of_list pager.pages in
-    let num_full_pages = (Char.code table.num_rows) / _rows_per_page in 
+    let num_full_pages = table.num_rows / _rows_per_page in 
       for i = 0 to num_full_pages - 1 do
         match pages.(i) with
         | Some page -> pager_flush pager i _page_size;
         pages.(i) <- None
         | None -> ()
       done;
-    let num_additional_rows = (Char.code table.num_rows) mod _rows_per_page in
+    let num_additional_rows = table.num_rows mod _rows_per_page in
       if (num_additional_rows > 0) then begin
         let page_num = num_full_pages in
         match pages.(page_num) with

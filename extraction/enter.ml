@@ -16,7 +16,7 @@ let print_row_list (rows : row list)  =
   Stdlib.List.iter (fun row -> Printf.printf "(%d, %s)\n" (Char.code row.id) (Regex.char_list_to_string row.name)) rows
 
 let print_table (tbl : table) =
-  Printf.printf "num_rows: %d\n" (Char.code tbl.num_rows);
+  Printf.printf "num_rows: %d\n" tbl.num_rows;
   Stdlib.List.iteri
     (fun i opt_page ->
        Printf.printf "Page %d: " i;

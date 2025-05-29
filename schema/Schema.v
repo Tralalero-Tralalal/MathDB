@@ -74,7 +74,7 @@ Definition Full_error (msg : string) : option table := None.
 
 (* This executes an insert operation*)
 Definition execute_insert (tbl : table) (r : row) : option table :=
-  let num_of_rows := Ascii.nat_of_ascii tbl.(num_rows) in
+  let num_of_rows := nat_of_int tbl.(num_rows) in
   if table_max_rows <? num_of_rows then (*Checks if there are too many rows*)
     Full_error "inflation made me too full"
   else
@@ -91,7 +91,7 @@ Definition execute_insert (tbl : table) (r : row) : option table :=
     let updated_pager := {| file_descriptor := (file_descriptor current_pager); 
       file_length := (file_length current_pager); pages := new_pages|} in 
     let updated_table := 
-      {| num_rows := Ascii.ascii_of_nat (Nat.succ num_of_rows); _pager := updated_pager |} in
+      {| num_rows := int_of_nat (Nat.succ num_of_rows); _pager := updated_pager |} in
     Some updated_table.
 
 (*This prints all rows*)
@@ -106,6 +106,6 @@ Fixpoint get_rows (tbl : table) (ls : list row) (i : nat) : list row :=
     let row := deserialize_row row_bytes in get_rows tbl (ls ++ [row]) i' end. 
 
 Definition execute_select (tbl : table) :=
-  get_rows tbl [] (Ascii.nat_of_ascii (num_rows tbl)).
+  get_rows tbl [] (nat_of_int (num_rows tbl)).
 
 

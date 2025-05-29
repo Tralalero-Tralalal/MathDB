@@ -18,7 +18,7 @@ Record pager := {
 }.
 
 Record table := {
-  num_rows : ascii; (*int8*)
+  num_rows : int; (*int8*)
   _pager : pager
 }.
 
