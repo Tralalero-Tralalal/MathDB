@@ -27,3 +27,8 @@ Record row := {
   name : string
 }.
 
+Record cursor := {
+  _table : table;
+  row_num : int;
+  eot : bool;
+}.
