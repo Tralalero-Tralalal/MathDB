@@ -7,7 +7,7 @@ Require Import Parser.Cabs.
 Require Import Parser.Lexer.
 
 
-Extract Constant Schema.get_page => "Get_page._get_page".
+Extract Constant Schema.get_page => "Extracted._get_page".
 
 Set Extraction Output Directory "./extraction/".
 
