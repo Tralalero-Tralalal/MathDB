@@ -5,4 +5,5 @@ This is a mathematically proven clone of SQLite. It is not designed to be produc
 
 ```sh
 make              # Compile the project
+make exec         # Make the executable
 make clean        # Clean build artifacts

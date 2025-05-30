@@ -2,8 +2,7 @@ From Stdlib Require Import String.
 From Stdlib Require Import Ascii.
 Require Import Stdlib.Lists.List.
 
-
-Require Import Proj.Cabs.
+Require Import Parser.Cabs.
 Import ListNotations.
 Open Scope string_scope.
 
@@ -22,7 +21,7 @@ Inductive tokens :=
   | Literal : literal -> tokens
 
 with literal :=
-  | Int_lit : Cabs.integer -> literal
+  | Int_lit : ascii -> literal
   | Float_lit : Cabs.floater -> literal
   | String_lit : string -> literal.
 
