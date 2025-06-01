@@ -27,7 +27,7 @@ Definition name_offset := id_offset + id_size.
 Definition email_offset := name_offset + name_size.
 (* Offset *)
 
-Definition row_size := id_size + name_size.
+Definition row_size := id_size + name_size + email_size.
 Definition page_size := 4096. (* 4 kilobytes*)
 Definition table_max_pages := 100.
 

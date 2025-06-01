@@ -50,10 +50,18 @@ Definition make_list_of {A : Type} (n : nat) (a : A) : list A :=
   add_n_elems_to_list n a [].
 
 
-Definition make_list (lst : list ascii) (len : nat) : list ascii :=
+Definition add_padding (lst : list ascii) (len : nat) : list ascii :=
   let padding_len := Nat.max 0 (len - length lst) in
   let padding := make_list_of padding_len Ascii.zero in 
   lst ++ padding.
+
+Fixpoint _remove_padding (lst : list ascii) : list ascii :=
+  match lst with 
+    | l :: rest => if eqb l zero then _remove_padding rest else l :: rest
+   | nil => nil end.
+
+Definition remove_padding (lst : list ascii) : list ascii :=
+  rev (_remove_padding (rev lst)).
 
 Fixpoint list_blit {A} (dst src : list A) (offset : nat) : list A :=
   let fix aux (i : nat) (d : list A) : list A :=

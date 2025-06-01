@@ -39,7 +39,7 @@ Definition leaf_node_cell_offset (cell_num : nat) :=
    (LEAF_NODE_HEADER_SIZE + (cell_num * LEAF_NODE_CELL_SIZE)).
 
 Definition sub_leaf_node_num_cells (p : page) (n : nat) :=
-   list_blit p (make_list [(ascii_of_nat n)] LEAF_NODE_NUM_CELLS_SIZE) LEAF_NODE_NUM_CELLS_OFFSET.
+   list_blit p (add_padding [(ascii_of_nat n)] LEAF_NODE_NUM_CELLS_SIZE) LEAF_NODE_NUM_CELLS_OFFSET.
 
 (*Only take the first byte out of 4*)
 Definition leaf_node_num_cells (p : page) :=
@@ -49,7 +49,7 @@ Definition leaf_node_cell (p : page) (cell_num : nat) :=
   list_sub p (leaf_node_cell_offset cell_num) LEAF_NODE_CELL_SIZE.
 
 Definition sub_leaf_node_key (p : page) (cell_num : nat) (new_key : nat) :=
-   list_blit p (make_list [(ascii_of_nat new_key)] LEAF_NODE_KEY_SIZE)
+   list_blit p (add_padding [(ascii_of_nat new_key)] LEAF_NODE_KEY_SIZE)
    (leaf_node_cell_offset cell_num).
 
 (*Only take the first byte out of 4*)
@@ -57,7 +57,7 @@ Definition leaf_node_key (p : page) (cell_num : nat) :=
   list_sub (leaf_node_cell p cell_num) LEAF_NODE_KEY_OFFSET LEAF_NODE_KEY_SIZE.
 
 Definition sub_leaf_node_value (p : page) (cell_num : nat) (value : list ascii) :=
-   list_blit p (make_list value LEAF_NODE_VALUE_SIZE)
+   list_blit p (add_padding value LEAF_NODE_VALUE_SIZE)
    ((leaf_node_cell_offset cell_num) + LEAF_NODE_VALUE_OFFSET).
 
 Definition leaf_node_value (p : page) (cell_num : nat) :=

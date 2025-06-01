@@ -19,13 +19,35 @@ Parameter _get_page : pager -> int -> pager * page.
 
 Definition deserialize_row (b : list ascii) : row :=
   {| id := hd zero b; 
-    name := string_of_list_ascii (list_sub b name_offset name_size);
-    email := string_of_list_ascii (list_sub b email_offset email_size);
+    name := string_of_list_ascii (remove_padding (list_sub b name_offset name_size));
+    email := string_of_list_ascii (remove_padding (list_sub b email_offset email_size));
   |}.
 
 Definition serialize_row (r : row) : list ascii :=
-  let value := list_ascii_of_string r.(name) ++ list_ascii_of_string r.(email) in
+  let value := add_padding (list_ascii_of_string r.(name)) name_size
+    ++ add_padding (list_ascii_of_string r.(email)) email_size in
   r.(id) :: value.
+
+Compute (serialize_row {|
+  id := one;
+  name := "Ahmad";
+  email := "Ahmad@potus.com";
+|}
+).
+
+Compute (deserialize_row ["001"%char; "A"%char; "h"%char; "m"%char; "a"%char; "d"%char;
+        "000"%char; "000"%char; "000"%char; "000"%char; "000"%char;
+        "000"%char; "000"%char; "000"%char; "000"%char; "000"%char;
+        "000"%char; "000"%char; "000"%char; "000"%char; "000"%char;
+        "000"%char; "000"%char; "000"%char; "000"%char; "000"%char;
+        "000"%char; "000"%char; "000"%char; "000"%char; "000"%char;
+        "000"%char; "000"%char; "A"%char; "h"%char; "m"%char; "a"%char;
+        "d"%char; "@"%char; "p"%char; "o"%char; "t"%char; "u"%char; "s"%char;
+        "."%char; "c"%char; "o"%char; "m"%char; "000"%char; "000"%char;
+        "000"%char; "000"%char; "000"%char; "000"%char; "000"%char;
+        "000"%char; "000"%char; "000"%char; "000"%char; "000"%char;
+        "000"%char; "000"%char; "000"%char; "000"%char; "000"%char]
+).
 
 Theorem serializing_inv : forall (r : row) (s : list ascii), s <> nil -> deserialize_row (serialize_row r) = r 
   /\ serialize_row(deserialize_row s) = s.
@@ -157,18 +179,19 @@ Definition execute_insert (tbl : table) (r : row) : option table :=
 
 (*This prints all rows*)
 Fixpoint get_rows (c : cursor) (ls : list row) (i : nat) : list row :=
+  if eot c then ls else
   match i with
   | 0 => ls
   | S i' =>
     let full := cursor_value c in (*Find the page to put it in, if there is none make a new one*) 
-    let page := get_second full in 
     let value := get_third full in
     let row_bytes := value in 
     let advanced_cursor := cursor_advance c in
-    let row := deserialize_row row_bytes in get_rows advanced_cursor (ls ++ [row]) i' end. 
+    let row := deserialize_row row_bytes in get_rows advanced_cursor (ls ++ [row]) i'
+  end. 
 
 Definition execute_select (tbl : table) :=
   let c := table_start tbl in
   (*Fix this*)
-  get_rows c [] (nat_of_int (root_page_num tbl)).
+  get_rows c [] (nat_of_int (num_pages (_pager tbl))).
 

@@ -10,11 +10,19 @@ exception Read_error of string
 exception Full_error of string
 exception Corrupt_error of string
 
+(* Sizes *)
 let _id_size = 1
 let _name_size = 32
+let _email_size = 32
+(* Sizes *)
+
+(* Offset *)
 let _id_offset = 0
 let _name_offset = _id_size + _id_offset
-let _row_size = _id_size + _name_size
+let _email_offset = _name_offset + _name_size
+(* Offset *)
+
+let _row_size = _id_size + _name_size + _email_size
 let _page_size = 4096
 let _table_max_pages = 100
 

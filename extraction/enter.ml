@@ -13,7 +13,8 @@ let print_char_list clist =
 
 (*This prints all rows*)
 let print_row_list (rows : row list)  =
-  Stdlib.List.iter (fun row -> Printf.printf "(%d, %s)\n" (Char.code row.id) (Regex.char_list_to_string row.name)) rows
+  Stdlib.List.iter (fun row -> Printf.printf "(%d, %s, %s)\n" 
+    (Char.code row.id) (Regex.char_list_to_string row.name) (Regex.char_list_to_string row.email)) rows
 
 let print_table (tbl : table) =
   Stdlib.List.iteri
@@ -51,7 +52,7 @@ and exec_lit tbl (f : Cabs.expr) (l : Cabs.expr) (z : Cabs.expr): table =
     let updated_tbl = match execute_insert tbl row with
                       | Some x -> x
                       | None -> raise (Full_error "too full") in
-    Printf.printf "Insert(%d, %s).\n" (Char.code id) (Regex.char_list_to_string name);
+    Printf.printf "Insert(%d, %s, %s).\n" (Char.code id) (Regex.char_list_to_string name) (Regex.char_list_to_string email);
     updated_tbl
   | _, _, _ -> print_endline "errors with literals"; tbl
 

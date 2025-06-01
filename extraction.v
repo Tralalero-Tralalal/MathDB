@@ -23,7 +23,7 @@ Records.name_offset Records.row_size Records.page_size Records.table_max_pages
 
   (*Helpers*)
 Helpers.map Helpers.mapi Helpers.update_nth Helpers.add_n_elems_to_list 
-Helpers.make_list_of Helpers.make_list Helpers.list_blit Helpers.list_sub
+Helpers.make_list_of Helpers.add_padding Helpers.list_blit Helpers.list_sub
 
 (*B_Tree*)
 B_Tree.initialize_leaf_node.
