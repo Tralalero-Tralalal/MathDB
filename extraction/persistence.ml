@@ -3,9 +3,12 @@ open Regex
 open Unix
 open Helpers
 open Schema
+open Extracted
+open B_Tree
 
 exception Read_error of string
 exception Full_error of string
+exception Corrupt_error of string
 
 let _id_size = 1
 let _name_size = 32
@@ -14,8 +17,6 @@ let _name_offset = _id_size + _id_offset
 let _row_size = _id_size + _name_size
 let _page_size = 4096
 let _table_max_pages = 100
-let _rows_per_page = _page_size / _row_size
-let _table_max_rows = _rows_per_page * _table_max_pages
 
 let char_list_to_bytes (clist : char list) (byte_size : int) : bytes =
   let b = Bytes.make byte_size '\000' in  (* Initialize with null bytes *)
@@ -31,15 +32,18 @@ let pager_open (file_name : string) : pager =
   let fd = Unix.openfile file_name [Unix.O_RDWR; Unix.O_CREAT] 0o600 in
     if fd = stderr then raise (Read_error "failed to open") else
       let file_length = Unix.lseek fd 0 Unix.SEEK_END in
-        let pager = { file_descriptor = fd; file_length = file_length; pages = make_list_of table_max_pages None } in
+        if file_length mod _page_size <> 0 then 
+          raise (Corrupt_error "file is corrupt") else
+      let new_pages = make_list_of table_max_pages None in
+        let pager = { 
+      file_descriptor = fd; 
+      file_length = file_length; 
+      pages = new_pages;
+      num_pages = Stdlib.List.length new_pages 
+    } in
           pager
 
-let db_open (file_name : string) : table =
-  let pager = pager_open file_name in 
-    let num_rows = pager.file_length / _row_size in
-    { num_rows = num_rows; _pager = pager }
-
-let pager_flush (pager : pager) (page_num : int) (size : int) =
+let pager_flush (pager : pager) (page_num : int) =
   match Stdlib.List.nth pager.pages page_num with
   | None ->
       prerr_endline "Tried to flush null page";
@@ -47,7 +51,7 @@ let pager_flush (pager : pager) (page_num : int) (size : int) =
   | Some page ->
       let offset = page_num * _page_size in
       let _ = Unix.lseek pager.file_descriptor offset Unix.SEEK_SET in
-      let written = Unix.write pager.file_descriptor (char_list_to_bytes page _page_size) 0 size in
+      let written = Unix.write pager.file_descriptor (char_list_to_bytes page _page_size) 0 _page_size in
       if written = -1 then (
         prerr_endline "Error writing page";
         exit 1
@@ -55,30 +59,33 @@ let pager_flush (pager : pager) (page_num : int) (size : int) =
 
 let open_db (filename : string) = 
   let pager = pager_open filename in 
-    let num_rows = pager.file_length / _row_size in
+    if pager.num_pages = 0 then 
+      let (_, root_node) = _get_page pager 0 in
+        let fresh_page = B_Tree.initialize_leaf_node root_node in
+          let new_pager = {
+            file_descriptor = pager.file_descriptor;
+            file_length = pager.file_length;
+            pages = [Some fresh_page];
+            num_pages = 1;
+          } in
           let return_tbl = {
-            num_rows = num_rows;
+            root_page_num = 0;
+            _pager = new_pager;
+          } in return_tbl else 
+          let return_tbl = {
+            root_page_num = 0;
             _pager = pager;
           } in return_tbl
-
 
 let db_close (table: table) = 
   let pager = table._pager in
   let pages = Stdlib.Array.of_list pager.pages in
-    let num_full_pages = table.num_rows / _rows_per_page in 
-      for i = 0 to num_full_pages - 1 do
+      for i = 0 to pager.num_pages - 1 do
         match pages.(i) with
-        | Some page -> pager_flush pager i _page_size;
+        | Some page -> pager_flush pager i;
         pages.(i) <- None
         | None -> ()
       done;
-    let num_additional_rows = table.num_rows mod _rows_per_page in
-      if (num_additional_rows > 0) then begin
-        let page_num = num_full_pages in
-        match pages.(page_num) with
-        | Some page -> pager_flush pager page_num (num_additional_rows * _row_size); pages.(page_num) <- None
-        | None -> ()
-      end;
   (try Unix.close pager.file_descriptor
     with Unix.Unix_error (_, _, _) ->
      prerr_endline "Error closing db file";

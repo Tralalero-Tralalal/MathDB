@@ -8,5 +8,6 @@ parser/Lexer.v
 schema/Helpers.v
 schema/Schema.v
 schema/Records.v
+schema/B_Tree.v
 
 extraction.v

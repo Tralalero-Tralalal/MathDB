@@ -13,19 +13,7 @@ Import List.ListNotations.
 
 From Schema Require Import Helpers.
 From Schema Require Import Records.
-
-Definition byte := ascii.
-Definition _bytes := list ascii.
-Definition page := _bytes.
-Definition id_size := 1.
-Definition name_size := 32. (* String can be 32 ascii asciis long *)
-Definition id_offset := 0.
-Definition name_offset := id_offset + id_size.
-Definition row_size := id_size + name_size.
-Definition page_size := 4096.
-Definition table_max_pages := 100.
-Definition rows_per_page := page_size / row_size.
-Definition table_max_rows := rows_per_page * table_max_pages.
+From Schema Require Import B_Tree.
 
 Parameter _get_page : pager -> int -> pager * page.
 
@@ -49,74 +37,122 @@ Qed.
 Definition get_page := _get_page.
 
 Definition cursor_value (cursor : cursor) :=
-  let row_num := nat_of_int (row_num cursor) in 
-  (*Finds which page it should be at*)
-  let page_num := row_num / rows_per_page in
-    (*How many rows is the row I'm looking for offset by?*)
-    let row_offset := row_num mod rows_per_page in
-    (*How many bytes is the byte I'm looking for offset by?*)
-    let byte_offset := row_offset * row_size in
+  let page_num := page_num cursor in
     (*Gets the page, making sure to allocate memory if there isn't any*)
-    let pager_and_page := get_page (_pager (_table cursor)) (int_of_nat page_num) in
-    (fst pager_and_page, snd pager_and_page, byte_offset).
+    let (pager, page) := get_page (_pager (_table cursor)) page_num in
+    (pager, page, leaf_node_value page (nat_of_int (cell_num cursor))).
 
 
-Definition table_start (tbl : table) := {| 
-  _table := tbl; 
-  row_num := int_of_nat 0; 
-  eot := false
+Definition table_start (tbl : table) := 
+  let root_node := snd (get_page (_pager tbl) (root_page_num tbl)) in
+    let num_cells := leaf_node_num_cells root_node in
+      let end_of_table := num_cells =? 0 in
+    {| 
+  _table := tbl;
+  page_num := root_page_num tbl;
+  cell_num := int_of_nat 0; 
+  eot := end_of_table
 |}.
 
-Definition table_end (tbl : table) := {|
+Definition table_end (tbl : table) :=
+  let root_node := snd (get_page (_pager tbl) (root_page_num tbl)) in
+    let num_cells := leaf_node_num_cells root_node in
+      let end_of_table := num_cells =? 0 in
+    {|
   _table := tbl;
-  row_num := num_rows tbl;
+  page_num := root_page_num tbl;
+  cell_num := int_of_nat num_cells;
   eot := true
 |}.
 
 Definition cursor_advance (cursor : cursor) :=
-  let new_row_num := nat_of_int (row_num cursor) + 1 in
-    if new_row_num =? nat_of_int (num_rows (_table cursor)) then 
+  let new_cell_num := nat_of_int (cell_num cursor) + 1 in
+    let page_num := page_num cursor in
+      let node := get_page (_pager (_table cursor)) page_num in
+    if new_cell_num =? leaf_node_num_cells (snd node) then 
     {|
       _table := _table cursor;
-      row_num := int_of_nat new_row_num;
+      page_num := page_num;
+      cell_num := int_of_nat new_cell_num;
       eot := true
     |} else 
     {|
       _table := _table cursor;
-      row_num := int_of_nat new_row_num;
+      page_num := page_num;
+      cell_num := int_of_nat new_cell_num;
       eot := false
     |}.  
 
 (* Definition for the Full_error exception (using option type to simulate) *)
 Definition Full_error (msg : string) : option table := None.
 
+Fixpoint bump_leaf_node_cell (cells : list ascii) (num_cells : nat) (cell_num : nat) : list ascii :=
+  match num_cells with
+    | 0 => cells
+    | S new_num_cells =>  
+  if Nat.ltb num_cells cell_num then
+    cells
+    else
+      let start_dest := Nat.mul LEAF_NODE_CELL_SIZE num_cells in
+      let start_src := Nat.mul LEAF_NODE_CELL_SIZE new_num_cells in
+      let shifted_cells := list_blit cells (list_sub cells start_src LEAF_NODE_CELL_SIZE) start_dest in
+      bump_leaf_node_cell shifted_cells new_num_cells cell_num 
+  end.
+
+Definition leaf_node_insert (cursor : cursor) (key : nat) (value : row) :=
+  let (pager, node) := get_page (_pager (_table cursor)) (page_num cursor) in
+    let num_cells := leaf_node_num_cells node in
+    let cell_num := nat_of_int (cell_num cursor) in
+      if num_cells =? LEAF_NODE_MAX_CELLS then
+        (pager, None)
+      else
+      if cell_num <? num_cells then
+        (*Bump nodes forward*)
+      let bumped_node := bump_leaf_node_cell node num_cells cell_num in
+        (*Increment node cells*)
+      let inc_node_cells := sub_leaf_node_num_cells bumped_node (num_cells + 1) in
+        (* replace key with new key  *)
+      let new_node_key := sub_leaf_node_key inc_node_cells cell_num key in
+        (*serialize the inputted row into a list of ascii that has a preallocated size
+        and put it as a new_node_value*)
+      let new_node_value := sub_leaf_node_value new_node_key cell_num (serialize_row value) in
+      (*This is the updated page*)
+      let updated_page := new_node_value in
+      (pager, Some updated_page)
+        else
+      let inc_node_cells := sub_leaf_node_num_cells node (num_cells + 1) in
+        (* replace key with new key  *)
+      let new_node_key := sub_leaf_node_key inc_node_cells cell_num key in
+        (*serialize the inputted row into a list of ascii that has a preallocated size
+        and put it as a new_node_value*)
+      let new_node_value := sub_leaf_node_value new_node_key cell_num (serialize_row value) in
+      (*This is the updated page*)
+      let updated_page := new_node_value in
+      (pager, Some updated_page).
+        
+
 (* This executes an insert operation*)
 Definition execute_insert (tbl : table) (r : row) : option table :=
-  let num_of_rows := nat_of_int tbl.(num_rows) in
-  if table_max_rows <? num_of_rows then (*Checks if there are too many rows*)
+  let node := snd (get_page (_pager tbl) (root_page_num tbl)) in
+  if LEAF_NODE_MAX_CELLS <? leaf_node_num_cells node then (*Checks if there are too many rows*)
     Full_error "inflation made me too full"
   else
     let c := table_end tbl in
-    let serialized := make_list (serialize_row r) row_size in (*serialize the inputted row into a list of ascii that has a preallocated size*)
-    let full := cursor_value c in (*Find the page to put it in, if there is none make a new one*) 
-    let current_pager := get_first full in (*Sets the current pager*)
-    let page := get_second full in (*Sets the page to write*)
-    let offset := get_third full in (*Sets the offset*)
-      (*The new page then replaces the current page,
-      which makes a new list called new_pages*)
-    let updated_page := list_blit page serialized offset in
-      (*Gets the index of the page*)
-    let page_num := num_of_rows / rows_per_page in
+    (*Get updated page*)
+    let (current_pager, updated_page) := leaf_node_insert c (nat_of_ascii (id r)) (r) in
+    (*Gets the index of the page *)
+    let page_num := page_num c in
       (*the updated page is added to the pages, creating new pages*)
-    let new_pages := update_nth (pages current_pager) (int_of_nat page_num) (Some updated_page) in
+    let new_pages := update_nth (pages current_pager) page_num updated_page in
     (*The updated table is returned*)
     let updated_pager := {| 
       file_descriptor := (file_descriptor current_pager); 
       file_length := (file_length current_pager); 
-      pages := new_pages
+      pages := new_pages;
+      num_pages := int_of_nat (length new_pages)
     |} in 
     let updated_table := {| 
-        num_rows := int_of_nat (Nat.succ num_of_rows); 
+        root_page_num := root_page_num tbl; 
         _pager := updated_pager 
       |} in
     Some updated_table.
@@ -128,12 +164,13 @@ Fixpoint get_rows (c : cursor) (ls : list row) (i : nat) : list row :=
   | S i' =>
     let full := cursor_value c in (*Find the page to put it in, if there is none make a new one*) 
     let page := get_second full in 
-    let offset := get_third full in
-    let row_bytes := list_sub page offset row_size in 
+    let value := get_third full in
+    let row_bytes := value in 
     let advanced_cursor := cursor_advance c in
     let row := deserialize_row row_bytes in get_rows advanced_cursor (ls ++ [row]) i' end. 
 
 Definition execute_select (tbl : table) :=
   let c := table_start tbl in
-  get_rows c [] (nat_of_int (num_rows tbl)).
+  (*Fix this*)
+  get_rows c [] (nat_of_int (root_page_num tbl)).
 

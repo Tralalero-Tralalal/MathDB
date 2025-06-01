@@ -39,5 +39,11 @@ let _get_page (pager : pager) (page_num : int) : pager * char list =
       (* Cache it *)
       let new_page = bytes_to_char_list page in
       let new_pages = update_nth (Stdlib.Array.to_list pages) page_num (Some new_page) in
-      let new_pager = { file_descriptor = pager.file_descriptor; file_length = pager.file_length; pages = new_pages} in 
+      let new_num_pages = if page_num >= pager.num_pages then 
+        pager.num_pages + 1 else pager.num_pages in
+      let new_pager = { 
+        file_descriptor = pager.file_descriptor; 
+        file_length = pager.file_length; 
+        num_pages = new_num_pages; 
+        pages = new_pages} in 
       (new_pager, new_page)

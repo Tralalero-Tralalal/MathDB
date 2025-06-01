@@ -11,14 +11,26 @@ From Stdlib Require Import ExtrOcamlIntConv.
 
 Definition pages_type := list (option (list ascii)).
 
+Definition byte := ascii.
+Definition _bytes := list ascii.
+Definition page := _bytes.
+Definition id_size := 1.
+Definition name_size := 32. (* String can be 32 ascii asciis long *)
+Definition id_offset := 0.
+Definition name_offset := id_offset + id_size.
+Definition row_size := id_size + name_size.
+Definition page_size := 4096. (* 4 kilobytes*)
+Definition table_max_pages := 100.
+
 Record pager := {
   file_descriptor : OUnix.file_descr;
   file_length : int;
-  pages : pages_type
+  pages : pages_type;
+  num_pages : int;
 }.
 
 Record table := {
-  num_rows : int; (*int8*)
+  root_page_num : int; (*int8*)
   _pager : pager
 }.
 
@@ -29,6 +41,7 @@ Record row := {
 
 Record cursor := {
   _table : table;
-  row_num : int;
+  page_num : int;
+  cell_num : int;
   eot : bool;
 }.

@@ -67,6 +67,7 @@ Fixpoint list_blit {A} (dst src : list A) (offset : nat) : list A :=
   in
   aux 0 dst.
 
+
 Fixpoint list_sub {A} (lst : list A) (offset len : nat) : list A :=
   match lst, offset with
   | _, 0 =>
@@ -78,3 +79,7 @@ Fixpoint list_sub {A} (lst : list A) (offset len : nat) : list A :=
   | _ :: tl, n' => list_sub tl (pred n') len
   end.
 
+Fixpoint is_list_of (lst : list ascii) (obj : ascii) : bool :=
+  match lst with
+  | f :: rest => if Ascii.eqb f obj then is_list_of rest obj else false
+  | nil => true end.
