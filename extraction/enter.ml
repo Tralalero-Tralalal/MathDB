@@ -50,7 +50,6 @@ and exec_lit tbl (f : Cabs.expr) (l : Cabs.expr) : table =
                       | Some x -> x
                       | None -> raise (Full_error "too full") in
     Printf.printf "Insert(%d, %s).\n" (Char.code id) (Regex.char_list_to_string name);
-    print_table updated_tbl;
     updated_tbl
   | _, _ -> print_endline "errors with literals"; tbl
 
@@ -101,7 +100,8 @@ let rec repl (tbl : table) =
   let line = read_line () in
   match line with
   | "exit" | "quit" -> db_close tbl; print_endline "Goodbye!"
-  | input ->
+  | "table" -> print_table tbl; repl tbl
+  | input -> 
   let words = Stdlib.String.split_on_char ' ' input in
     let tokens = tokenize words in
     let ast = parse tokens in
