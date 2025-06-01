@@ -65,7 +65,7 @@ Definition cursor_value (cursor : cursor) :=
 
 Definition table_start (tbl : table) := 
   let root_node := snd (get_page (_pager tbl) (root_page_num tbl)) in
-    let num_cells := leaf_node_num_cells root_node in
+    let num_cells := nat_of_int (leaf_node_num_cells root_node) in
       let end_of_table := num_cells =? 0 in
     {| 
   _table := tbl;
@@ -76,7 +76,7 @@ Definition table_start (tbl : table) :=
 
 Definition table_end (tbl : table) :=
   let root_node := snd (get_page (_pager tbl) (root_page_num tbl)) in
-    let num_cells := leaf_node_num_cells root_node in
+    let num_cells := nat_of_int (leaf_node_num_cells root_node) in
       let end_of_table := num_cells =? 0 in
     {|
   _table := tbl;
@@ -89,7 +89,7 @@ Definition cursor_advance (cursor : cursor) :=
   let new_cell_num := nat_of_int (cell_num cursor) + 1 in
     let page_num := page_num cursor in
       let node := get_page (_pager (_table cursor)) page_num in
-    if new_cell_num =? leaf_node_num_cells (snd node) then 
+    if new_cell_num =? nat_of_int (leaf_node_num_cells (snd node)) then 
     {|
       _table := _table cursor;
       page_num := page_num;
@@ -121,7 +121,8 @@ Fixpoint bump_leaf_node_cell (cells : list ascii) (num_cells : nat) (cell_num : 
 
 Definition leaf_node_insert (cursor : cursor) (key : nat) (value : row) :=
   let (pager, node) := get_page (_pager (_table cursor)) (page_num cursor) in
-    let num_cells := leaf_node_num_cells node in
+    let num_cells := nat_of_int (leaf_node_num_cells node) in
+    (*WIP >= *)
     let cell_num := nat_of_int (cell_num cursor) in
       if num_cells =? LEAF_NODE_MAX_CELLS then
         (pager, None)
@@ -154,7 +155,7 @@ Definition leaf_node_insert (cursor : cursor) (key : nat) (value : row) :=
 (* This executes an insert operation*)
 Definition execute_insert (tbl : table) (r : row) : option table :=
   let node := snd (get_page (_pager tbl) (root_page_num tbl)) in
-  if LEAF_NODE_MAX_CELLS <? leaf_node_num_cells node then (*Checks if there are too many rows*)
+  if LEAF_NODE_MAX_CELLS <? nat_of_int (leaf_node_num_cells node) then (*Checks if there are too many rows*)
     Full_error "inflation made me too full"
   else
     let c := table_end tbl in

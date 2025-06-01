@@ -43,7 +43,7 @@ Definition sub_leaf_node_num_cells (p : page) (n : nat) :=
 
 (*Only take the first byte out of 4*)
 Definition leaf_node_num_cells (p : page) :=
-  nat_of_ascii (hd zero (list_sub p LEAF_NODE_NUM_CELLS_OFFSET LEAF_NODE_NUM_CELLS_SIZE)). (*Only take the first byte*)
+  int_of_nat (nat_of_ascii (hd zero (list_sub p LEAF_NODE_NUM_CELLS_OFFSET LEAF_NODE_NUM_CELLS_SIZE))). (*Only take the first byte*)
 
 Definition leaf_node_cell (p : page) (cell_num : nat) :=
   list_sub p (leaf_node_cell_offset cell_num) LEAF_NODE_CELL_SIZE.
@@ -53,8 +53,8 @@ Definition sub_leaf_node_key (p : page) (cell_num : nat) (new_key : nat) :=
    (leaf_node_cell_offset cell_num).
 
 (*Only take the first byte out of 4*)
-Definition leaf_node_key (p : page) (cell_num : nat) :=
-  list_sub (leaf_node_cell p cell_num) LEAF_NODE_KEY_OFFSET LEAF_NODE_KEY_SIZE.
+Definition leaf_node_key (p : page) (cell_num : int) :=
+  list_sub (leaf_node_cell p (nat_of_int cell_num)) LEAF_NODE_KEY_OFFSET LEAF_NODE_KEY_SIZE.
 
 Definition sub_leaf_node_value (p : page) (cell_num : nat) (value : list ascii) :=
    list_blit p (add_padding value LEAF_NODE_VALUE_SIZE)
@@ -69,8 +69,3 @@ Definition initialize_leaf_node (p : page) :=
 Definition rando := ["A"%char; "A"%char; "H"%char; "M"%char; "A"%char; "D"%char].
 
 Definition plain_page := make_list_of page_size zero.
-
-Compute (leaf_node_num_cells 
-(sub_leaf_node_num_cells plain_page 7)).
-Compute (leaf_node_key (sub_leaf_node_key plain_page 7 7) 7).
-Compute (leaf_node_value (sub_leaf_node_value plain_page 7 rando) 7).

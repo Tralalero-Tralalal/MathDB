@@ -6,6 +6,17 @@ open Unix
 open Helpers
 open Persistence
 open Records
+open Extracted
+open B_Tree
+open Printf
+
+let print_leaf_node (node : page) : unit =
+  let num_cells = leaf_node_num_cells node in
+  printf "leaf (size %d)\n" num_cells;
+  for i = 0 to num_cells - 1 do
+    let key = leaf_node_key node i in
+    printf "  - %d : %d\n" i (Stdlib.Char.code (Stdlib.List.hd key))
+  done
 
 let print_char_list clist =
   clist |> Stdlib.List.iter (fun c -> print_char c);
@@ -104,6 +115,7 @@ let rec repl (tbl : table) =
   match line with
   | "exit" | "quit" -> db_close tbl; print_endline "Goodbye!"
   | "table" -> print_table tbl; repl tbl
+  | "tree" -> print_leaf_node (snd (_get_page (tbl._pager) 0)); repl tbl
   | input -> 
   let words = Stdlib.String.split_on_char ' ' input in
     let tokens = tokenize words in
