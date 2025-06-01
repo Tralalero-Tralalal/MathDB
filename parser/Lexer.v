@@ -40,9 +40,9 @@ Definition parse_lits (t : literal) : Cabs.expr  :=
 
 Definition parse_args (args : list tokens) : Cabs.insert_stmt :=
   match args with
-  | [Literal x; Literal y; Semi] => Cabs.WITH_INSERT (parse_lits x) (parse_lits y)
-  | [Literal _; Literal _] => Cabs.ERR_INSERT "forgor semi"
-  | _ => Cabs.ERR_INSERT "Incorrect num of args, expect 2"
+  | [Literal x; Literal y; Literal z; Semi] => Cabs.WITH_INSERT (parse_lits x) (parse_lits y) (parse_lits z)
+  | [Literal _; Literal _; Literal _] => Cabs.ERR_INSERT "forgor semi"
+  | _ => Cabs.ERR_INSERT "Incorrect num of args, expect 3"
   end.
 
 Definition parse (tokens : list tokens) : Cabs.sql_stmt :=

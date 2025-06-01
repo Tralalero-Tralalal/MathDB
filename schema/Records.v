@@ -14,10 +14,19 @@ Definition pages_type := list (option (list ascii)).
 Definition byte := ascii.
 Definition _bytes := list ascii.
 Definition page := _bytes.
+
+(* Sizes *)
 Definition id_size := 1.
 Definition name_size := 32. (* String can be 32 ascii asciis long *)
+Definition email_size := 32.
+(* Sizes *)
+
+(* Offset *)
 Definition id_offset := 0.
 Definition name_offset := id_offset + id_size.
+Definition email_offset := name_offset + name_size.
+(* Offset *)
+
 Definition row_size := id_size + name_size.
 Definition page_size := 4096. (* 4 kilobytes*)
 Definition table_max_pages := 100.
@@ -36,7 +45,8 @@ Record table := {
 
 Record row := {
   id : ascii; (*int8*)
-  name : string
+  name : string;
+  email : string
 }.
 
 Record cursor := {

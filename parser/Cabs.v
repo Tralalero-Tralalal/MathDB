@@ -17,7 +17,7 @@ with sql_stmt :=
   | ERR_STMT : string -> sql_stmt
 
 with insert_stmt :=
-  | WITH_INSERT : expr -> expr -> insert_stmt
+  | WITH_INSERT : expr -> expr -> expr -> insert_stmt
   | ERR_INSERT : string -> insert_stmt
 
 with expr :=

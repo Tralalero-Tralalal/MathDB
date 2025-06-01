@@ -34,24 +34,26 @@ let rec exec_ast (tbl : table) (ast : Cabs.sql_stmt) : table =
 
 and exec_insert tbl (ast : Cabs.insert_stmt) : table =
   match ast with 
-  | WITH_INSERT (x, y) -> exec_lit tbl x y
+  | WITH_INSERT (x, y, z) -> exec_lit tbl x y z
   | ERR_INSERT x -> print_endline (char_list_to_string x); tbl
 
-and exec_lit tbl (f : Cabs.expr) (l : Cabs.expr) : table =
-  match f, l with
-  | EXPR_LIT a, EXPR_LIT b -> 
+and exec_lit tbl (f : Cabs.expr) (l : Cabs.expr) (z : Cabs.expr): table =
+  match f, l, z with
+  | EXPR_LIT a, EXPR_LIT b, EXPR_LIT c -> 
     let id = get_int a in
     let name = get_str b in
+    let email = get_str c in
     let row = {
       id = id;
       name = name;
+      email = email;
     } in
     let updated_tbl = match execute_insert tbl row with
                       | Some x -> x
                       | None -> raise (Full_error "too full") in
     Printf.printf "Insert(%d, %s).\n" (Char.code id) (Regex.char_list_to_string name);
     updated_tbl
-  | _, _ -> print_endline "errors with literals"; tbl
+  | _, _, _ -> print_endline "errors with literals"; tbl
 
 and get_str (ast : Cabs.constant) =
   match ast with
