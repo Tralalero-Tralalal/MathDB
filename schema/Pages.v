@@ -1,6 +1,6 @@
 From Stdlib Require Import String.
 From Stdlib Require Import Ascii.
-Require Import Proj.Cabs.
+Require Import Parser.Cabs.
 
 Parameter pages_type : Type.
 

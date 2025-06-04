@@ -1,7 +1,13 @@
 extraction/*
-!extraction/_tags
-!extraction/MenhirLib
-!extraction/_CoqProject
+!extraction/enter.ml
+!extraction/regex.ml
+!extraction/schema.ml
 
-_build/
+*.vo
+*.vok
+*.vos
+.*.aux
+*.glob
+*.d
+
 enter.native
