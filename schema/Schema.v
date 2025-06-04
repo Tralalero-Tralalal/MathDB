@@ -73,8 +73,8 @@ Definition get_page (tbl : table) (row_num : nat) :=
   let pages := (allocate_memory page_num tbl row_num) in
   let page := List.nth_error pages page_num in
   match page with 
-    | Some p => (pages, p)
-    | None => (pages, None) end.
+    | Some p => p
+    | None => None end.
 
 Definition get_offset (row_num : nat) :=
   let row_offset := row_num mod rows_per_page in
@@ -93,14 +93,15 @@ Definition execute_insert (tbl : table) (r : row) :=
       None else
       (*Serialize rows*)
       let serialized := serialize_row r in
-        let (_pages, page) := get_page tbl num_rows in
+        let alloc_pages := allocate_memory page_num tbl num_rows in
+        let page := get_page tbl num_rows in
         match page with
           | Some p =>
           let offset := get_offset num_rows in
           let updated_page := list_blit p serialized offset in
-          let new_pages := update_nth (pages tbl) page_num (Some updated_page) in
+          let new_pages := update_nth alloc_pages page_num (Some updated_page) in
           Some {|
-            num_rows := ascii_of_nat ( num_rows + 1);
+            num_rows := ascii_of_nat (num_rows + 1);
             pages := new_pages
           |}
           | None => memory_alloc_error "failed to alloc memory" end.
@@ -111,7 +112,7 @@ Fixpoint get_rows (tbl : table) (ls : list row) (i : nat) : list row :=
   | 0 => rev ls
   | S i' =>
     let offset := get_offset i' in
-    let (_, page) := get_page tbl i' in 
+    let page := get_page tbl i' in 
     match page with
     | Some p => 
     let row_bytes := list_sub p offset row_size in 
@@ -127,6 +128,6 @@ Definition execute_select (tbl : table) :=
 Definition new_tbl :=
   let emp_pages := make_list_of 100 None in 
   let pre_alloc_page := make_list_of 4069 zero in 
-  let new_pages := update_nth emp_pages 1 (Some pre_alloc_page) in
+  let new_pages := update_nth emp_pages 0 (Some pre_alloc_page) in
 {| num_rows := zero; pages :=  new_pages|}.
 
