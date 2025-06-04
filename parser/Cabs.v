@@ -3,11 +3,6 @@ From Stdlib Require Import Ascii.
 
 Require Import ZArith.
 
-Parameter loc : Type.
-Parameter integer : Type.
-Parameter floater : Type.
-Parameter str : Type.
-
 Inductive prog :=
   | PROGRAM : sql_stmt -> prog
 
@@ -33,12 +28,4 @@ with constant :=
 with insert_body :=
   | INSERT_VALUES : list (list expr) ->(* omit clauses for now*) insert_body
   | INSERT_DEFAULT.
-
-Require Import ExtrOcamlBasic.
-Require Import ExtrOcamlString.
-
-Extract Constant Cabs.loc => "Lexing.position".
-Extract Constant Cabs.integer => "int".
-Extract Constant Cabs.floater => "float".
-Extract Constant Cabs.str => "string".
 
