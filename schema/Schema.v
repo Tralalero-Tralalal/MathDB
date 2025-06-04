@@ -61,7 +61,7 @@ Qed.
 if there isn't, allocate the memory and return the new_pages*)
 Definition allocate_memory (page_num : nat) (tbl : table) (row_num : nat) : pages_ :=
   let pages := pages tbl in
-    match List.nth_error pages page_num with
+    match List.nth_default None pages page_num with
     | Some p => pages
     | None =>
         let new_page := make_list_of page_size zero in
@@ -73,8 +73,8 @@ Definition get_page (tbl : table) (row_num : nat) :=
   let pages := (allocate_memory page_num tbl row_num) in
   let page := List.nth_error pages page_num in
   match page with 
-    | Some p => p
-    | None => None end.
+    | Some p => (pages, p)
+    | None => (pages, None) end.
 
 Definition get_offset (row_num : nat) :=
   let row_offset := row_num mod rows_per_page in
@@ -93,18 +93,17 @@ Definition execute_insert (tbl : table) (r : row) :=
       None else
       (*Serialize rows*)
       let serialized := serialize_row r in
-        let allocated_pages := allocate_memory num_rows tbl in
-        let page := get_page tbl num_rows in
+        let (_pages, page) := get_page tbl num_rows in
         match page with
-        | Some p =>
-        let offset := get_offset num_rows in
-        let updated_page := list_blit p serialized offset in
-        let new_pages := update_nth (pages tbl) page_num (Some updated_page) in
-        Some {|
-          num_rows := ascii_of_nat ( num_rows + 1);
-          pages := new_pages
-        |}
-        | None => memory_alloc_error "failed to alloc memory" end.
+          | Some p =>
+          let offset := get_offset num_rows in
+          let updated_page := list_blit p serialized offset in
+          let new_pages := update_nth (pages tbl) page_num (Some updated_page) in
+          Some {|
+            num_rows := ascii_of_nat ( num_rows + 1);
+            pages := new_pages
+          |}
+          | None => memory_alloc_error "failed to alloc memory" end.
 
 (*This prints all rows*)
 Fixpoint get_rows (tbl : table) (ls : list row) (i : nat) : list row :=
@@ -112,7 +111,7 @@ Fixpoint get_rows (tbl : table) (ls : list row) (i : nat) : list row :=
   | 0 => rev ls
   | S i' =>
     let offset := get_offset i' in
-    let page := get_page tbl i' in 
+    let (_, page) := get_page tbl i' in 
     match page with
     | Some p => 
     let row_bytes := list_sub p offset row_size in 
