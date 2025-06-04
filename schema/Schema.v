@@ -68,9 +68,7 @@ Definition allocate_memory (page_num : nat) (tbl : table) (row_num : nat) : page
         let new_pages := update_nth pages page_num (Some new_page) in
         new_pages end.
 
-Definition get_page (tbl : table) (row_num : nat) :=
-  let page_num := row_num / rows_per_page in
-  let pages := (allocate_memory page_num tbl row_num) in
+Definition get_page (pages : pages_) (page_num : nat) :=
   let page := List.nth_error pages page_num in
   match page with 
     | Some p => p
@@ -93,36 +91,42 @@ Definition execute_insert (tbl : table) (r : row) :=
       None else
       (*Serialize rows*)
       let serialized := serialize_row r in
+      (* Allocate the memory to the pages if there isn't a place for the insert*)
         let alloc_pages := allocate_memory page_num tbl num_rows in
-        let page := get_page tbl num_rows in
+        (* Get the page that will have the row inserted *)
+        let page := get_page alloc_pages page_num in
         match page with
           | Some p =>
+          (* Get the location where the row should be inserted *)
           let offset := get_offset num_rows in
+          (* Update the page that we got *)
           let updated_page := list_blit p serialized offset in
+          (* put the updated page into the pages to make new_pages *)
           let new_pages := update_nth alloc_pages page_num (Some updated_page) in
           Some {|
             num_rows := ascii_of_nat (num_rows + 1);
             pages := new_pages
           |}
+          (*If the page is not found, then return an error*)
           | None => memory_alloc_error "failed to alloc memory" end.
 
 (*This prints all rows*)
-Fixpoint get_rows (tbl : table) (ls : list row) (i : nat) : list row :=
+Fixpoint get_rows (pages : pages_) (ls : list row) (i : nat) : list row :=
   match i with
   | 0 => rev ls
   | S i' =>
     let offset := get_offset i' in
-    let page := get_page tbl i' in 
+    let page := get_page pages i' in 
     match page with
     | Some p => 
     let row_bytes := list_sub p offset row_size in 
-    let row := deserialize_row row_bytes in get_rows tbl (ls ++ [row]) i'  
+    let row := deserialize_row row_bytes in get_rows pages (ls ++ [row]) i'  
     | None =>
       [] end 
   end.
 
 Definition execute_select (tbl : table) :=
-  get_rows tbl [] (nat_of_ascii (num_rows tbl)).
+  get_rows (pages tbl) [] (nat_of_ascii (num_rows tbl)).
 
 
 Definition new_tbl :=
