@@ -7,21 +7,6 @@ From Stdlib Require Import ZArith.
 From Stdlib Require Import ExtrOcamlIntConv.
 Import List.ListNotations.
 
-Definition get_third {A : Type} {B : Type} {C : Type} (t : A * B * C) : C :=
-  match t with
-  | (_, _, c) => c
-  end.
-
-Definition get_second {A : Type} {B : Type} {C : Type} (t : A * B * C) : B :=
-  match t with
-  | (_, b, _) => b
-  end.
-
-Definition get_first {A : Type} {B : Type} {C : Type} (t : A * B * C) : A :=
-  match t with
-  | (a, _, _) => a
-  end.
-
 Fixpoint map {A : Type} {B : Type} (l : list A) (func : A -> B) : list B :=
     match l with
       | nil => nil
@@ -52,7 +37,7 @@ Definition make_list_of {A : Type} (n : nat) (a : A) : list A :=
 
 Definition add_padding (lst : list ascii) (len : nat) : list ascii :=
   let padding_len := Nat.max 0 (len - length lst) in
-  let padding := make_list_of padding_len Ascii.zero in 
+  let padding := make_list_of padding_len "A"%char in 
   lst ++ padding.
 
 Fixpoint _remove_padding (lst : list ascii) : list ascii :=

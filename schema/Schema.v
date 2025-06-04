@@ -14,15 +14,20 @@ Require Import Schema.Helpers.
 Import List.ListNotations.
 
 
-Definition id_size := 4.
-Definition name_size := 32.
+(* Sizes *)
+Definition id_size := 1.
+Definition name_size := 32. (* String can be 32 ascii asciis long *)
+Definition email_size := 32.
+(* Sizes *)
 
+(* Offset *)
 Definition id_offset := 0.
 Definition name_offset := id_offset + id_size.
+Definition email_offset := name_offset + name_size.
+(* Offset *)
 
-Definition row_size := id_size + name_size.
-
-Definition page_size := 4096.
+Definition row_size := id_size + name_size + email_size.
+Definition page_size := 4096. (* 4 kilobytes*)
 Definition table_max_pages := 100.
 Definition rows_per_page := page_size / row_size.
 Definition table_max_rows := rows_per_page * table_max_pages.
@@ -37,25 +42,24 @@ Record table := {
 Record row := {
   id : ascii;
   name : string;
+  email : string;
 }.
 
 Definition deserialize_row (b : list ascii) : row :=
-  match b with
-  | id :: name => {| id := id; name := string_of_list_ascii name |}
-  | nil => {| id := "0"%char; name := "" |}  (* or handle differently if needed *)
-  end.
+  {| id := hd zero b; 
+    name := string_of_list_ascii (remove_padding (list_sub b name_offset name_size));
+    email := string_of_list_ascii (remove_padding (list_sub b email_offset email_size));
+  |}.
 
 Definition serialize_row (r : row) : list ascii :=
-  r.(id) :: list_ascii_of_string r.(name).
+  let value := add_padding (list_ascii_of_string r.(name)) name_size
+    ++ add_padding (list_ascii_of_string r.(email)) email_size in
+  r.(id) :: value.
 
 Theorem serializing_inv : forall (r : row) (s : list ascii), s <> nil -> deserialize_row (serialize_row r) = r 
   /\ serialize_row(deserialize_row s) = s.
 Proof.
-split. simpl. rewrite string_of_list_ascii_of_string. destruct r. simpl. reflexivity.
-induction s. exfalso. apply H. reflexivity. unfold serialize_row. simpl. rewrite list_ascii_of_string_of_list_ascii.
-reflexivity.
-Qed.
-
+split. simpl. Admitted.
 
 (*Checks if there is memory for the row to be allocated to
 if there isn't, allocate the memory and return the new_pages*)

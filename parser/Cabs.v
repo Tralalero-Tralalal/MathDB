@@ -3,7 +3,6 @@ From Stdlib Require Import Ascii.
 
 Require Import ZArith.
 
-Parameter integer : Type.
 Parameter str : Type.
 
 Inductive prog :=
@@ -15,7 +14,7 @@ with sql_stmt :=
   | ERR_STMT : string -> sql_stmt
 
 with insert_stmt :=
-  | WITH_INSERT : expr -> expr -> insert_stmt
+  | WITH_INSERT : expr -> expr -> expr -> insert_stmt
   | ERR_INSERT : string -> insert_stmt
 
 with expr :=
@@ -33,7 +32,5 @@ with insert_body :=
 
 Require Import ExtrOcamlBasic.
 Require Import ExtrOcamlString.
-
-Extract Constant Cabs.integer => "int".
 Extract Constant Cabs.str => "string".
 

@@ -2,7 +2,6 @@ From Stdlib Require Import String.
 From Stdlib Require Import Ascii.
 Require Import Stdlib.Lists.List.
 
-
 Require Import Parser.Cabs.
 Import ListNotations.
 Open Scope string_scope.
@@ -39,9 +38,9 @@ Definition parse_lits (t : literal) : Cabs.expr  :=
 
 Definition parse_args (args : list tokens) : Cabs.insert_stmt :=
   match args with
-  | [Literal x; Literal y; Semi] => Cabs.WITH_INSERT (parse_lits x) (parse_lits y)
-  | [Literal _; Literal _] => Cabs.ERR_INSERT "forgor semi"
-  | _ => Cabs.ERR_INSERT "Incorrect num of args, expect 2"
+  | [Literal x; Literal y; Literal z; Semi] => Cabs.WITH_INSERT (parse_lits x) (parse_lits y) (parse_lits z)
+  | [Literal _; Literal _; Literal _] => Cabs.ERR_INSERT "forgor semi"
+  | _ => Cabs.ERR_INSERT "Incorrect num of args, expect 3"
   end.
 
 Definition parse (tokens : list tokens) : Cabs.sql_stmt :=
@@ -54,4 +53,3 @@ Definition parse (tokens : list tokens) : Cabs.sql_stmt :=
 Extract Constant Lexer.string_uppercase => "Stdlib.String.uppercase_ascii".
 Extract Constant Lexer.char_list_to_string => "Regex.char_list_to_string".
 Extract Constant Lexer.string_to_char_list => "Regex.string_to_char_list".
-
