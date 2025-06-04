@@ -5,7 +5,7 @@
 parser/Cabs.v
 parser/Lexer.v
 
-schema/Pages.v
+schema/Helpers.v
 schema/Schema.v
 
 extraction.v

@@ -3,9 +3,7 @@ From Stdlib Require Import Ascii.
 
 Require Import ZArith.
 
-Parameter loc : Type.
 Parameter integer : Type.
-Parameter floater : Type.
 Parameter str : Type.
 
 Inductive prog :=
@@ -26,8 +24,7 @@ with expr :=
 
 with constant :=
   | STR_LIT : string -> constant
-  | INTEGER_LIT : integer -> constant
-  | FLOATER_LIT : floater -> constant
+  | INTEGER_LIT : ascii -> constant
   | ERR_CONST : string -> constant
 
 with insert_body :=
@@ -37,8 +34,6 @@ with insert_body :=
 Require Import ExtrOcamlBasic.
 Require Import ExtrOcamlString.
 
-Extract Constant Cabs.loc => "Lexing.position".
 Extract Constant Cabs.integer => "int".
-Extract Constant Cabs.floater => "float".
 Extract Constant Cabs.str => "string".
 
