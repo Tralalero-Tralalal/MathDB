@@ -7,6 +7,7 @@ From Stdlib Require Import ZArith.
 From Stdlib Require Import ExtrOcamlIntConv.
 Import List.ListNotations.
 
+(* General list manipulation*)
 Fixpoint map {A : Type} {B : Type} (l : list A) (func : A -> B) : list B :=
     match l with
       | nil => nil
@@ -31,23 +32,118 @@ Fixpoint add_n_elems_to_list {A : Type} (n : nat) (a : A) (ls : list A) : list A
   | S n' => add_n_elems_to_list n' a (ls ++ [a])
   end.
 
+Lemma add_to_nil {A : Type} : forall (n : nat) (a : A),
+  List.length (add_n_elems_to_list n a []) = n.
+Proof.
+  intros. induction n.
+  -  reflexivity.
+  - rewrite <- IHn. Admitted.
+
+      (* If ls' has at least n' elements, then (x :: ls') has at least S n' elements *)
+Lemma add_n_elems_len {A : Type} : forall (n : nat) (a : A) (ls : list A),
+  List.length (add_n_elems_to_list n a ls) = (List.length ls) + n.
+Proof.
+  intros. induction n, ls. 
+  + reflexivity.
+  + simpl. rewrite Nat.add_0_r. reflexivity. 
+  + simpl in IHn. assert (S n = S (Datatypes.length (add_n_elems_to_list n a []))).
+    -  rewrite IHn. reflexivity.  
+    - simpl. rewrite H. unfold length, add_n_elems_to_list. Admitted.
+
+
 Definition make_list_of {A : Type} (n : nat) (a : A) : list A :=
   add_n_elems_to_list n a [].
+(*General list manipulation*)
+(*Theorems for General list manipulation*)
 
+Lemma make_list_of_len {A : Type} : forall (n : nat) (a : A), 
+  List.length (make_list_of n a) = n.
+Proof.
+  intros. induction n. 
+  - reflexivity.
+  - unfold make_list_of.  unfold add_n_elems_to_list. Admitted.
 
+Lemma make_list_of_0_len {A : Type} : forall (a : A), 
+  List.length (make_list_of 0 a) = 0.
+Proof. reflexivity. Qed.
+
+Lemma make_list_of_0 {A : Type} : forall (a : A), 
+  make_list_of 0 a = [].
+Proof. reflexivity. Qed. 
+(*Theorems for General list manipulation*)
+
+(* Helpers for serializing and deserializing*)
+(*This adds empty bytes*)
 Definition add_padding (lst : list ascii) (len : nat) : list ascii :=
   let padding_len := Nat.max 0 (len - length lst) in
   let padding := make_list_of padding_len zero in 
   lst ++ padding.
 
+Lemma add_0_padding : forall (lst : list ascii),
+  add_padding lst 0 = lst.
+Proof.
+  intros. induction lst. reflexivity. unfold add_padding. 
+  rewrite make_list_of_0. simpl. rewrite app_nil_r. reflexivity.
+Qed.
+
+Lemma add_n_padding_len : forall (lst : list ascii) (n : nat),
+  length (add_padding lst n) = n.
+Proof.
+  intros.
+  induction lst, n.  
+  - reflexivity.
+  - unfold add_padding. unfold make_list_of. simpl.
+Admitted.
+
+(*This removes all empty bytes, 
+it should not interact with memory that is a single byte long*)
 Fixpoint _remove_padding (lst : list ascii) : list ascii :=
   match lst with 
-    | l :: rest => if eqb l zero then _remove_padding rest else l :: rest
+   | l :: rest => if eqb l zero then _remove_padding rest else lst
    | nil => nil end.
+
+Lemma _remove_padding_len : forall (lst : list ascii),
+  length (_remove_padding lst) <= length lst.
+Proof.
+  intros. induction lst. simpl. reflexivity.
+  destruct a; destruct b, b0, b1, b2, b3, b4, b5, b6; 
+  try reflexivity. simpl. Search (_ <= S _).
+  rewrite IHlst. apply Nat.le_succ_diag_r.
+Qed.
+
+Lemma _remove_padding_same : forall (lst : list ascii),
+  ~ (_remove_padding [(hd zero lst)] = nil) -> _remove_padding lst = lst.
+Proof.
+  intros. destruct lst. reflexivity.
+  destruct a; destruct b, b0, b1, b2, b3, b4, b5, b6; try reflexivity.
+  simpl in H. destruct H. reflexivity.
+Qed.
+
+Lemma _remove_padding_rev : forall (lst : list ascii) (a : ascii),
+  ~ (_remove_padding [(last (lst ++ [a]) zero)] = nil) -> 
+  _remove_padding (rev (lst ++ [a])) = rev (lst ++ [a]).
+Proof.
+  intros. destruct a; 
+  destruct b, b0, b1, b2, b3, b4, b5, b6; rewrite rev_unit; 
+  try reflexivity; rewrite last_last in H; simpl in H; 
+  destruct H; reflexivity.
+Qed.
 
 Definition remove_padding (lst : list ascii) : list ascii :=
   rev (_remove_padding (rev lst)).
 
+Lemma remove_padding_s : forall (lst : list ascii) (a : ascii), 
+ ~ (_remove_padding [(last (lst ++ [a]) zero)] = nil)  ->
+ remove_padding (lst ++ [a]) = (lst ++ [a]).
+Proof.
+  intros. unfold remove_padding.
+  destruct a;  destruct b, b0, b1, b2, b3, b4, b5, b6; 
+  rewrite _remove_padding_rev; try (rewrite rev_involutive; reflexivity);
+  try (apply H).
+Qed. 
+(* Helpers for serializing and deserializing*)
+
+(* Manipulating the bytes, will replace this if I use Hoare logic*)
 Fixpoint list_blit {A} (dst src : list A) (offset : nat) : list A :=
   let fix aux (i : nat) (d : list A) : list A :=
     match d with
@@ -76,3 +172,5 @@ Fixpoint is_list_of (lst : list ascii) (obj : ascii) : bool :=
   match lst with
   | f :: rest => if Ascii.eqb f obj then is_list_of rest obj else false
   | nil => true end.
+
+(* Manipulating the bytes, might replace this if I use Hoare logic*)
