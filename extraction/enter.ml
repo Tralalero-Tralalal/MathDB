@@ -30,7 +30,7 @@ let print_table (tbl : table) =
 let rec exec_ast (tbl : table) (ast : Cabs.sql_stmt) : table = 
   match ast with
   | Cabs.INSERT_STMT x -> exec_insert tbl x
-  | Cabs.PRINT_STMT -> let rows = execute_select tbl in print_int (Stdlib.List.length rows); print_row_list rows; tbl
+  | Cabs.PRINT_STMT -> let rows = execute_select tbl in print_row_list rows; tbl
   | ERR_STMT x -> print_endline (char_list_to_string x); tbl
 
 and exec_insert tbl (ast : Cabs.insert_stmt) : table =

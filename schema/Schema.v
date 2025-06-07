@@ -115,12 +115,12 @@ Definition execute_insert (tbl : table) (r : row) :=
           | None => memory_alloc_error "failed to alloc memory" end.
 
 (*This prints all rows*)
-Fixpoint get_rows (pages : pages_) (ls : list row) (i : nat) : list row :=
-  match i with
+Fixpoint get_rows (pages : pages_) (ls : list row) (num_rows : nat) : list row :=
+  match num_rows with
   | 0 => rev ls
   | S i' =>
     let offset := get_offset i' in
-    let page := get_page pages i' in 
+    let page := get_page pages (i' / rows_per_page) in 
     match page with
     | Some p => 
     let row_bytes := list_sub p offset row_size in 
