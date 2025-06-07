@@ -41,25 +41,29 @@ Record table := {
 
 Record row := {
   id : ascii;
-  name : string;
-  email : string;
+  name : list ascii;
+  email : list ascii;
 }.
 
 Definition deserialize_row (b : list ascii) : row :=
   {| id := hd zero b; 
-    name := string_of_list_ascii (remove_padding (list_sub b name_offset name_size));
-    email := string_of_list_ascii (remove_padding (list_sub b email_offset email_size));
+    name := remove_padding (list_sub b name_offset name_size);
+    email := remove_padding (list_sub b email_offset email_size);
   |}.
 
 Definition serialize_row (r : row) : list ascii :=
-  let value := add_padding (list_ascii_of_string r.(name)) name_size
-    ++ add_padding (list_ascii_of_string r.(email)) email_size in
+  let value := add_padding r.(name) name_size
+    ++ add_padding r.(email) email_size in
   r.(id) :: value.
 
 Theorem serializing_inv : forall (r : row) (s : list ascii), s <> nil -> deserialize_row (serialize_row r) = r 
   /\ serialize_row(deserialize_row s) = s.
 Proof.
-split. simpl. Admitted.
+split. destruct r as [name email id]; destruct id, name, email; 
+destruct b, b0, b1, b2, b3, b4, b5, b6; 
+try (unfold deserialize_row; reflexivity).
+unfold deserialize_row. unfold serialize_row. simpl.
+Admitted.
 
 (*Checks if there is memory for the row to be allocated to
 if there isn't, allocate the memory and return the new_pages*)
