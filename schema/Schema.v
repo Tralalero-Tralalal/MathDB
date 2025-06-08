@@ -67,14 +67,31 @@ Admitted.
 
 (*Checks if there is memory for the row to be allocated to
 if there isn't, allocate the memory and return the new_pages*)
-Definition allocate_memory (page_num : nat) (tbl : table) (row_num : nat) : pages_ :=
-  let pages := pages tbl in
+Definition allocate_memory (page_num : nat) (pages : pages_) : pages_ :=
     match List.nth_default None pages page_num with
     | Some p => pages
     | None =>
         let new_page := make_list_of page_size zero in
         let new_pages := update_nth pages page_num (Some new_page) in
         new_pages end.
+
+Lemma nth_default_f {A : Type} : forall (lst : list A) (def a : A),
+  nth_default def (a :: lst) 0 = a.
+Proof.
+  intros.
+  unfold nth_default. reflexivity.
+Qed.
+
+Lemma allocate_to_none : forall (page_num : nat) (pages : pages_),
+  ~ (pages = []) ->
+  List.nth_default None pages page_num = None ->
+  allocate_memory page_num pages <> pages.
+Proof.
+  intros pages page_num. induction pages, page_num; intros.
+  destruct H; reflexivity. unfold allocate_memory.
+  rewrite nth_default_f. rewrite nth_default_f in H0. 
+  subst. Admitted.
+
 
 Definition get_page (pages : pages_) (page_num : nat) :=
   let page := List.nth_error pages page_num in
@@ -100,7 +117,7 @@ Definition execute_insert (tbl : table) (r : row) :=
       (*Serialize rows*)
       let serialized := serialize_row r in
       (* Allocate the memory to the pages if there isn't a place for the insert*)
-        let alloc_pages := allocate_memory page_num tbl num_rows in
+        let alloc_pages := allocate_memory page_num (pages tbl) in
         (* Get the page that will have the row inserted *)
         let page := get_page alloc_pages page_num in
         match page with

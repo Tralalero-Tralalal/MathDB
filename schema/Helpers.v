@@ -7,6 +7,8 @@ From Stdlib Require Import ZArith.
 From Stdlib Require Import ExtrOcamlIntConv.
 Import List.ListNotations.
 
+Definition A : Type.
+Admitted.
 (* General list manipulation*)
 Fixpoint map {A : Type} {B : Type} (l : list A) (func : A -> B) : list B :=
     match l with
@@ -25,6 +27,13 @@ Definition mapi {A B : Type} (l : list A) (f : nat -> A -> B) : list B :=
 
 Definition update_nth {A : Type} (lst : list A) (idx : nat) (new_val : A) : list A :=
   mapi lst (fun n x => if Nat.eqb n idx then new_val else x).
+
+Lemma update_not_eq : forall (lst : list A) (a : A) (b : A),
+  update_nth (a :: lst) 0 b =
+  b :: lst.
+Proof.
+  intros. induction lst; unfold update_nth; unfold mapi; unfold mapi_aux. simpl. reflexivity.
+  simpl. Admitted.
 
 Fixpoint add_n_elems_to_list {A : Type} (n : nat) (a : A) (ls : list A) : list A :=
   match n with
@@ -159,14 +168,24 @@ Fixpoint list_blit {A} (dst src : list A) (offset : nat) : list A :=
 
 Fixpoint list_sub {A} (lst : list A) (offset len : nat) : list A :=
   match lst, offset with
-  | _, 0 =>
-    (match lst, len with
-     | _, 0 => []
-     | [], _ => []
-     | hd :: tl, len' => hd :: list_sub tl 0 (pred len') end)
+  | _, 0 => match lst, len with
+            | _, 0 => []
+            | [], _ => []
+            | hd :: tl, len' => hd :: list_sub tl 0 (pred len') end
   | [], _ => []
   | _ :: tl, n' => list_sub tl (pred n') len
   end.
+
+
+Lemma sub_0 {A : Type} : forall (offset : nat) (lst : list A),
+  list_sub lst offset 0 = [].
+Proof.
+  intros. induction lst, offset. 
+  - reflexivity. 
+  - reflexivity.
+  - reflexivity.
+  - rewrite <- IHlst. simpl. Admitted.
+
 
 Fixpoint is_list_of (lst : list ascii) (obj : ascii) : bool :=
   match lst with
