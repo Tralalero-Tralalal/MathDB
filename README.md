@@ -1,5 +1,5 @@
-# A formally verified clone of SQLite
-This is a mathematically proven clone of SQLite. It is not designed to be production ready, but rather as a research project.
+# SQLite in Gallina.
+Just a random project I made in Gallina.
 
 ## 🛠 How to Build
 
